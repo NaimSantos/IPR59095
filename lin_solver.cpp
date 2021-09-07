@@ -1,22 +1,20 @@
 #include <iostream>
 #include <cmath>
 #include <vector>
+#include <string>
+#include <fstream>
+#include <iterator> //std::istream_iterator
 
+#include "prototypes.h"
 
-//Protótipos das funções:
-template<typename T> bool is_diagonal_dom(const std::vector<std::vector<T>>& A);
-template<typename T> void gauss_siedel_solver(const std::vector<std::vector<T>>& A, const std::vector<T>& B, std::vector<T>& X);
-void tdma_solver(const std::vector<double>& a, const std::vector<double>& b, std::vector<double>& c, std::vector<double>& d);
-template <typename T> void print_array_2D(const std::vector<std::vector<T>> A);
-template <typename T> void print_array_1D(const std::vector<T> A);
 
 int main(int argc, char* argv[]){
 
 	// ---- Exemplo com Gauss-Siedel -----//
 	std::vector<std::vector<double>> A { {2, 1, 0, 0},
-                            {1, 3, 2, 0},
-                            {0, 2, 5, 1},
-                            {0, 0, 3, 8} };
+                                         {1, 3, 2, 0},
+                                         {0, 2, 5, 1},
+                                         {0, 0, 3, 8} };
 	std::vector<double> B {7, 19, 31, 52};
 	auto n = B.size();
 	std::vector<double> X(n, 0.0); // estimativa inicial: um vetor com n zeros
@@ -46,10 +44,7 @@ int main(int argc, char* argv[]){
 
 }
 
-
-// Resolve um sistema Ax = B pelo método de Gauss-Siedel, onde X um vetor com as estimativas iniciais:
-template<typename T>
-void gauss_siedel_solver(const std::vector<std::vector<T>>& A, const std::vector<T>& B, std::vector<T>& X){
+void gauss_siedel_solver(const std::vector<std::vector<double>>& A, const std::vector<double>& B, std::vector<double>& X){
 	// Caso não seja diagonal dominante, a convergência não é garantida
 	/*
 	if (!is_diagonal_dom(A))
@@ -86,15 +81,6 @@ void gauss_siedel_solver(const std::vector<std::vector<T>>& A, const std::vector
 	}
 }
 
-/* Resolve um sistema Ax = B pelo algoritmo de Thomas, onde A é uma matriz tridiagonal
-	Parâmetros:
-	a: objeto std::vetor com a diagonal inferior
-	b: objeto std::vetor com a diagonal principal
-	c: objeto std::vetor com a diagonal superior
-	d: objeto std::vetor com os termos independentes
-	c não é preservado nesta versão
-	Ao final, d contém a solução.
-*/
 void tdma_solver(const std::vector<double>& a, const std::vector<double>& b, std::vector<double>& c, std::vector<double>& d){
 	auto n = static_cast<int>(d.size()-1);
 
@@ -111,31 +97,6 @@ void tdma_solver(const std::vector<double>& a, const std::vector<double>& b, std
 	for (int i = n; i-- > 0;){
 		d[i] = d[i] - (c[i]*d[i+1]);
 	}
-}
-
-
-/////---------Outros utilitários-------/////
-
-// Verifica se um objeto std::vector<std::vector> (vetor de vetores), de elementos do tipo T, é uma matriz diagonal dominante:
-template<typename T>
-bool is_diagonal_dom(const std::vector<std::vector<T>>& A){
-	auto n_rows = A.size();
-	auto n_col = A[0].size();
-	if (n_rows != n_col)
-		return false;
-
-	for (int i = 0; i < n_rows; i++){
-		double sum = 0.0;
-		double diag = std::fabs(A[i][i]);
-		for (int j = 0; j < n_col; j++){
-			if (i == j)
-				continue;
-			sum += std::fabs(A[i][j]);
-		}
-		if (sum > diag)
-			return false;
-	}
-	return true;
 }
 
 template <typename T>
@@ -157,4 +118,31 @@ void print_array_1D(const std::vector<T> A){
 		std::cout << A[i] << ' ';
 	}
 	std::cout << '\n';
+}
+
+void read_data(){
+	std::ifstream in_file("input_data.txt");
+	std::istream_iterator<double> start(in_file), end;
+	std::vector<double> data(start, end);
+	std::cout << "Input file contains " << data.size() << " numbers" << std::endl;
+
+	std::cout << "Printing vector..." << std::endl;
+	for (auto& x : data)
+		std::cout << x << ' ' ;
+}
+void read_2(){
+	std::ifstream input( "filename.ext" );
+	for( std::string line; std::getline(input, line); )
+	{
+		//operations in each line
+	}
+	/*
+	std::ifstream file("FILENAME.TXT")
+	if (input.is_open()){
+		std::string line;
+		while (std::getline(input, line)){
+			
+		}
+	}
+	*/
 }
