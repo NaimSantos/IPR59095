@@ -1,0 +1,4 @@
+Pressao_inicial:         30000.0
+Comprimento_em_x:        1000.0
+Comprimento_em_y:        100.0
+Comprimento_em_z:        10.0
