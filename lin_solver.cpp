@@ -5,27 +5,30 @@
 #include <fstream>
 #include <iterator> //std::istream_iterator
 
-#include "prototypes.h"
+void gauss_siedel_solver(const std::vector<std::vector<double>>& A, const std::vector<double>& B, std::vector<double>& X);
+void tdma_solver(const std::vector<double>& a, const std::vector<double>& b, std::vector<double>& c, std::vector<double>& d);
+template <typename T> void print_array_2D(const std::vector<std::vector<T>> A);
+template <typename T> void print_array_1D(const std::vector<T> A);
 
 
 int main(int argc, char* argv[]){
 
-	// ---- Exemplo com Gauss-Siedel -----//
-	std::vector<std::vector<double>> A { {2, 1, 0, 0},
-                                         {1, 3, 2, 0},
-                                         {0, 2, 5, 1},
-                                         {0, 0, 3, 8} };
-	std::vector<double> B {7, 19, 31, 52};
-	auto n = B.size();
-	std::vector<double> X(n, 0.0); // estimativa inicial: um vetor com n zeros
 
-	std::cout << "Matriz de Coeficientes:\n";
-	print_array_2D(A);
-	std::cout << "Termos independentes: ";
-	print_array_1D(B);
-	std::cout << "Estimativas iniciais: " ;
-	print_array_1D(X);
-
+	constexpr double x_len {1000.0};
+	constexpr double y_len {100.0};
+	constexpr double z_len {10.0};
+	constexpr double rho {1000.0};       // massa específica
+	constexpr double phi {1.0};          // porosidade
+	constexpr double phi_ref {1.0};      // porosidade
+	constexpr double mu {1.0};           // viscosidade
+	constexpr double k_x {1.0};          // permeabilidade
+	constexpr double k_y {1.0};          // permeabilidade
+	constexpr double k_z {1.0};          // permeabilidade
+	constexpr double c_phi {1.0};        // compressibilidade
+	constexpr double B_ref {1.0};        // B de referência
+	constexpr double B_ref {1.0};        // compressibilidade
+	constexpr double P_ref {3000.0};     // pressão de referência
+	constexpr double FVF {0.5};          // fator volume formação
 
 	// ---- Exemplo com o TDMA ---- //
 	std::vector<double> a1 = {0, 1, 2, 3};      //diagonal inferior
@@ -34,22 +37,16 @@ int main(int argc, char* argv[]){
 	std::vector<double> d1 = {7, 19, 31, 52};   // b
 
 	tdma_solver(a1, b1, c1, d1);
-	gauss_siedel_solver(A, B, X);
-
-
-	std::cout << "\nSolucao (Gauss-Siedel): ";
-	print_array_1D (X);
 	std::cout << "Solucao (TDMA): ";
 	print_array_1D<double>(d1);
 
 }
 
+double evaluate_B(const double P){
+	
+}
+
 void gauss_siedel_solver(const std::vector<std::vector<double>>& A, const std::vector<double>& B, std::vector<double>& X){
-	// Caso não seja diagonal dominante, a convergência não é garantida
-	/*
-	if (!is_diagonal_dom(A))
-		return;
-	*/
 	// Dimensões não são compatíveis:
 	if ((A.size() != A[0].size()) || A.size() != B.size())
 		return;
@@ -118,31 +115,4 @@ void print_array_1D(const std::vector<T> A){
 		std::cout << A[i] << ' ';
 	}
 	std::cout << '\n';
-}
-
-void read_data(){
-	std::ifstream in_file("input_data.txt");
-	std::istream_iterator<double> start(in_file), end;
-	std::vector<double> data(start, end);
-	std::cout << "Input file contains " << data.size() << " numbers" << std::endl;
-
-	std::cout << "Printing vector..." << std::endl;
-	for (auto& x : data)
-		std::cout << x << ' ' ;
-}
-void read_2(){
-	std::ifstream input( "filename.ext" );
-	for( std::string line; std::getline(input, line); )
-	{
-		//operations in each line
-	}
-	/*
-	std::ifstream file("FILENAME.TXT")
-	if (input.is_open()){
-		std::string line;
-		while (std::getline(input, line)){
-			
-		}
-	}
-	*/
 }
