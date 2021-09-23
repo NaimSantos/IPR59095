@@ -1,21 +1,21 @@
 #include <iostream>
+#include <iomanip>  //std::setw
 #include <cmath>
 #include <vector>
 #include <string>
 #include <fstream>
 #include <iterator> //std::istream_iterator
 
-struct FluidReservoir{
-	double rho;
-	double mu;
+struct Fluid{
+	double rho;      // massa específica
+	double mu;       // viscosidade
+	double c;        // compressibilidade
 };
-struct RockReservoir{
-	double rho;
-	double phi_ref;
-	double mu;
-	double k_x;          // permeabilidade
-	double k_y;          // permeabilidade
-	double k_z;          // permeabilidade
+struct Rock{
+	double phi_ref;  // porosidade de referencia
+	double k_x;      // permeabilidade
+	double k_y;      // permeabilidade
+	double k_z;      // permeabilidade
 	double c_phi;
 };
 
@@ -39,7 +39,6 @@ int main(int argc, char* argv[]){
 	constexpr double k_z {1.0};          // permeabilidade
 	constexpr double c_phi {1.0};        // compressibilidade
 	constexpr double B_ref {1.0};        // B de referência
-	constexpr double B_ref {1.0};        // compressibilidade
 	constexpr double P_ref {3000.0};     // pressão de referência
 	constexpr double FVF {0.5};          // fator volume formação
 
@@ -54,11 +53,8 @@ int main(int argc, char* argv[]){
 	print_array_1D<double>(d1);
 }
 
-double evaluate_B(const double P){
-	/*
-	Procurar a expressão de B em função de P
-	
-	*/
+double evaluate_B(const double p){
+	return B_ref / (1 + c*(p - P_ref));
 }
 
 void tdma_solver(const std::vector<double>& a, const std::vector<double>& b, std::vector<double>& c, std::vector<double>& d){
