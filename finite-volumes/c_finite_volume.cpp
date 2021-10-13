@@ -109,7 +109,7 @@ void solve_via_fromm(std::vector<std::vector<double>>& Q_fromm){
 		size_t i_next = 0;
 		size_t i_previous = 0;
 		size_t i_previous2 = 0;
-		for (int n = 1; n < nsteps; n++){
+		for (int i = 0; i < N; i++){
 			// Periodicidade:
 			(i == N-1) ? i_next = 0 : i_next = i+1;
 			(i == 0) ? i_previous = N-1 : i_previous = i-1;
