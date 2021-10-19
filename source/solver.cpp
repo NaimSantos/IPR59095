@@ -1,78 +1,64 @@
-#include <iostream>
-#include <iomanip>  //std::setw
-#include <cmath>
-#include <vector>
-#include <string>
-#include <fstream>
-#include <iterator> //std::istream_iterator
+#include "common.h"
 
-struct Fluid{
-	double rho;      // massa específica
-	double mu;       // viscosidade
-	double c;        // compressibilidade
-};
-struct Rock{
-	double phi_ref;  // porosidade de referencia
-	double k_x;      // permeabilidade
-	double k_y;      // permeabilidade
-	double k_z;      // permeabilidade
-	double c_phi;
-};
-
-void gauss_siedel_solver(const std::vector<std::vector<double>>& A, const std::vector<double>& B, std::vector<double>& X);
-void tdma_solver(const std::vector<double>& a, const std::vector<double>& b, std::vector<double>& c, std::vector<double>& d);
-template <typename T> void print_array_2D(const std::vector<std::vector<T>> A);
-template <typename T> void print_array_1D(const std::vector<T> A);
-
+constexpr double k_x {10e-15};       // permeabilidade
+constexpr double phi_ref {0.25};     // porosidade
+constexpr double P_ini {4.5e7};     // porosidade
+constexpr double Lx {500.0};         // dimensão em x
+constexpr double Ly {40.0};          // dimensão em y
+constexpr double Lz {10.0};          // dimensão em z
+constexpr double B_ref {1.5};        // B de referência
+constexpr double rho_o {820.0};      // massa específica do óleo
+constexpr double mu_o {1.2e-3};         // viscosidade
+constexpr double c_phi {6.0e-10};        // compressibilidade
+constexpr double FVF {1.0};          // fator volume formação
 
 int main(int argc, char* argv[]){
+	std::vector<std::vector<double>> VX = {{2, 1, 0, 0}, {1, 3, 2, 0}, {0, 2, 5, 1}, {0, 0, 3, 8}};
+	std::vector<double> X0 = {7, 19, 31, 52};
+	print_array_2D(VX);
+	auto res = tdma2(VX, X0);
+	std::cout << "O resultado eh: "<< std::endl;
+	print_array_1D(res);
+}
 
-	constexpr double x_len {1000.0};
-	constexpr double y_len {100.0};
-	constexpr double z_len {10.0};
-	constexpr double rho {1000.0};       // massa específica
-	constexpr double phi {1.0};          // porosidade
-	constexpr double phi_ref {1.0};      // porosidade
-	constexpr double mu {1.0};           // viscosidade
-	constexpr double k_x {1.0};          // permeabilidade
-	constexpr double k_y {1.0};          // permeabilidade
-	constexpr double k_z {1.0};          // permeabilidade
-	constexpr double c_phi {1.0};        // compressibilidade
-	constexpr double B_ref {1.0};        // B de referência
-	constexpr double P_ref {3000.0};     // pressão de referência
-	constexpr double FVF {0.5};          // fator volume formação
+std::vector<double> tdma2(const std::vector<std::vector<double>>& Mat, const std::vector<double>& X){
+	auto n_row = Mat.size();
+	auto n_col = Mat[0].size();
+	if (n_row != n_col || n_row == 0)
+		std::cout << "Matriz nao-quadrada detectada" << std::endl;
 
-	// ---- Exemplo com o TDMA ---- //
-	std::vector<double> a1 = {0, 1, 2, 3};      //diagonal inferior
-	std::vector<double> b1 = {2, 3, 5, 8};      //diagonal principal
-	std::vector<double> c1 = {1, 2, 1, 0};      //diagonal superior
-	std::vector<double> d1 = {7, 19, 31, 52};   // b
+	std::vector<double> A (n_row, 0.0);
+	std::vector<double> B (n_row, 0.0);
+	std::vector<double> C (n_row, 0.0) ;
+	std::vector<double> D = X;
 
-	tdma_solver(a1, b1, c1, d1);
-	std::cout << "Solucao (TDMA): ";
-	print_array_1D<double>(d1);
+	for (size_t i = 0; i < (n_row-1); i++){
+		size_t j = i;
+		B[i] = Mat[i][j];       // diagonal principal
+		A[i+1] = Mat[i+1][j];   // diagonal inferior
+		C[i] = Mat[i][j+1];     // diagonal superior
+	}
+	B[n_row-1] = Mat[n_row-1][n_col-1];
+
+	C[0] /= B[0];
+	D[0] /= B[0];
+	int n = D.size()-1;
+	for (int i = 1; i < n; i++){
+		C[i] = (C[i] ) / (B[i] - A[i]*C[i-1]);
+		D[i] = (D[i] - A[i]*D[i-1]) / (B[i] - A[i]*C[i-1]);
+	}
+
+	D[n] = (D[n] - A[n]*D[n-1]) / (B[n] - A[n]*C[n-1]);
+
+	for (int i = n; i-- > 0;){
+		D[i] = D[i] - (C[i]*D[i+1]);
+	}
+
+	return D;
 }
 
 double evaluate_B(const double p){
-	return B_ref / (1 + c*(p - P_ref));
-}
-
-void tdma_solver(const std::vector<double>& a, const std::vector<double>& b, std::vector<double>& c, std::vector<double>& d){
-	auto n = static_cast<int>(d.size()-1);
-
-	c[0] /= b[0];
-	d[0] /= b[0];
-
-	for (int i = 1; i < n; i++){
-		c[i] = (c[i] ) / (b[i] - a[i]*c[i-1]);
-		d[i] = (d[i] - a[i]*d[i-1]) / (b[i] - a[i]*c[i-1]);
-	}
-
-	d[n] = (d[n] - a[n]*d[n-1]) / (b[n] - a[n]*c[n-1]);
-
-	for (int i = n; i-- > 0;){
-		d[i] = d[i] - (c[i]*d[i+1]);
-	}
+	return B_ref / (1 + c_phi*(p - P_ini));
 }
 
 template <typename T>
