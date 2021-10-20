@@ -20,30 +20,29 @@ std::vector<double> linspace(double start, double end, int num);
 
 // Variáveis do domínio do problema e da simulação:
 constexpr double C {0.8};                         // Número de Courant
-constexpr double u {0.5};                         // Velocidade de propagação
-constexpr int N {501};                            // Número de 'nós' na malha
+constexpr double u {0.5};                         // Velocidade de propagação da onda
+constexpr int N {50};                             // Número de 'nós' na malha
 constexpr double L{1.0};                          // Domínio espacial
 constexpr auto dx = L/N;                          // Refinamento da discretização
 constexpr auto dt = C*dx/u;                       // Passo de tempo calculado
 constexpr double t0 {0.0};                        // Início da simulação
-constexpr double tf1 {1.0};                       // Tempo de interesse 1
-constexpr double tf2 {5.0};                       // Tempo de interesse 2
+constexpr double tf1 {2.0};                       // Tempo de interesse 1
 constexpr auto nsteps = static_cast<int>(tf1/dt); // Número de passos de tempo
 constexpr auto CFL = u*dt/dx;
 
 int main (int argc, char* argv[]){
 	auto X = linspace(0.0, L, N);
 	auto Ext = linspace(0.0, L, N);
+	
+	// Exemplo com método de primeira ordem:
 	std::vector<std::vector<double>> Q_up (nsteps, std::vector<double>(N, 0.0));
-
 	solve_via_upwind(Q_up);
 	solve_exat(Ext, tf1);
-	/*
-	for (const auto& p : Q_up[nsteps-1])
-		std::cout << p << std::endl;
-	*/
 	save_data(X, Ext, Q_up[nsteps-1]);
-	std::cout << "\nExecution reached the end" << std::endl;
+
+	// Exemplo com método de alta ordem:
+	std::vector<std::vector<double>> Q_minmod (nsteps, std::vector<double>(N, 0.0));
+	solve_via_highresolution(Q_minmod, phi_koren);
 }
 
 double function_s(double x){
