@@ -58,12 +58,12 @@ double phi_koren(double teta){
 }
 
 // Função limitadora de fluxo do método TVD Ospre: superbee
-void phi_ospre(double teta){
+double phi_ospre(double teta){
 	return 1.5*(teta**teta + teta)/(teta*teta + teta + 1);
 }
 
 // Função limitadora de fluxo do método TVD van Albada: SC
-void phi_albada(double teta){
+double phi_albada(double teta){
 	return (teta*teta + teta)/(teta*teta + 1);
 }
 
