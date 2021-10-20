@@ -3,6 +3,7 @@
 #include <vector>
 #include <fstream>
 #include <algorithm>  //std::max, std::min
+#include <functional>  //std::function
 
 
 double function_s(double x);
@@ -11,6 +12,7 @@ void solve_via_upwind(std::vector<std::vector<double>>& Q);
 void solve_via_lax(std::vector<std::vector<double>>& Q);
 void solve_via_beam_warming(std::vector<std::vector<double>>& Q);
 void solve_via_fromm(std::vector<std::vector<double>>& Q);
+void solve_via_highresolution(std::vector<std::vector<double>>& Q, std::function<double (double)> func);
 void fill_initial_cond(std::vector<double>& V);
 void solve_exat(std::vector<double>& V, double tf);
 void save_data(const std::vector<double>& X, const std::vector<double>& E, const std::vector<double>& A);
