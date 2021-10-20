@@ -2,7 +2,7 @@
 #include <cmath>
 #include <vector>
 #include <fstream>
-#include <algorithm>  //std::max. std::min
+#include <algorithm>  //std::max, std::min
 
 
 double function_s(double x);
@@ -15,7 +15,6 @@ void fill_initial_cond(std::vector<double>& V);
 void solve_exat(std::vector<double>& V, double tf);
 void save_data(const std::vector<double>& X, const std::vector<double>& E, const std::vector<double>& A);
 std::vector<double> linspace(double start, double end, int num);
-
 
 // Variáveis do domínio do problema e da simulação:
 constexpr double C {0.8};                         // Número de Courant
@@ -150,7 +149,7 @@ void solve_via_minmod(std::vector<std::vector<double>>& Q){
 		size_t i_prev = 0;
 		size_t i_prev2 = 0;
 		for (int i = 0; i < N; i++){
-			# Periodicidade:
+			// Periodicidade:
 			(i == 0) ? i_prev = N-1 : i_prev = i-1;
 			(i_prev == 0) ? i_prev2 = N-1 : i_prev2 = i_prev-1;
 			(i == N-1) ? i_next = 0 : i_next = i+1;
