@@ -52,14 +52,17 @@ double function_phi(double x){
 	return std::exp(-200*(std::pow(x-0.3, 2))) + function_s(x);
 }
 
+// Função limitadora de fluxo do método TVD Koren: minmod
 double phi_koren(double teta){
 	return std::max(0, std::min(2*teta, std::min((1 + 2*teta)/3, 2)));
 }
 
+// Função limitadora de fluxo do método TVD Ospre: superbee
 void phi_ospre(double teta){
 	return 1.5*(teta**teta + teta)/(teta*teta + teta + 1);
 }
 
+// Função limitadora de fluxo do método TVD van Albada: SC
 void phi_albada(double teta){
 	return (teta*teta + teta)/(teta*teta + 1);
 }
@@ -138,8 +141,8 @@ void solve_via_fromm(std::vector<std::vector<double>>& Q){
 	}
 }
 
-void solve_via_minmod(std::vector<std::vector<double>>& Q){
-	std::cout << "Minmod solver called..." << std::endl;
+void solve_via_highresolution(std::vector<std::vector<double>>& Q, std::function<double (double)> func){
+	std::cout << "High Resolution solver called..." << std::endl;
 	fill_initial_cond(Q[0]);
 	//Iteração no tempo:
 	for (int n = 1; n < nsteps; n++){
@@ -160,12 +163,12 @@ void solve_via_minmod(std::vector<std::vector<double>>& Q){
 			if (u > 0){
 				teta_prev = (Q[n-1, i_prev] - Q[n-1, i_prev2])/(Q[n-1, i] - Q[n-1, i_prev]);
 				teta_next = (Q[n-1, i] - Q[n-1, i_prev])/(Q[n-1, i_next] - Q[n-1, i]);
-				Q[n, i] = Q[n-1, i] - C*(Q[n-1, i] - Q[n-1, i_prev]) - 0.5*C*(1 - C)*(phi_koren(teta_next)*(Q[n-1, i_next] - Q[n-1, i]) - phi_koren(teta_prev)*(Q[n-1, i] - Q[n-1, i_prev]));
+				Q[n, i] = Q[n-1, i] - C*(Q[n-1, i] - Q[n-1, i_prev]) - 0.5*C*(1 - C)*(func(teta_next)*(Q[n-1, i_next] - Q[n-1, i]) - func(teta_prev)*(Q[n-1, i] - Q[n-1, i_prev]));
 			}
 			else{
 				teta_prev = (Q[n-1, i_next] - Q[n-1, i])/(Q[n-1, i] - Q[n-1, i_prev]);
 				teta_next = (Q[n-1, i_next2] - Q[n-1, i_next])/(Q[n-1, i_next] - Q[n-1, i]);
-				Q[n, i] = Q[n-1, i] - C*(Q[n-1, i_next] - Q[n-1, i]) + 0.5*C*(1 + C)*(phi_koren(teta_next)*(Q[n-1, i_next] - Q[n-1, i]) - phi_koren(teta_prev)*(Q[n-1, i] - Q[n-1, i_prev]));
+				Q[n, i] = Q[n-1, i] - C*(Q[n-1, i_next] - Q[n-1, i]) + 0.5*C*(1 + C)*(func(teta_next)*(Q[n-1, i_next] - Q[n-1, i]) - func(teta_prev)*(Q[n-1, i] - Q[n-1, i_prev]));
 			}
 		}
 	}
