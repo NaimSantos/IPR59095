@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <cmath>
 #include <vector>
 #include <string>
@@ -25,7 +26,7 @@ std::vector<double> linspace(double start, double end, int num);
 // Variáveis do domínio do problema e da simulação:
 constexpr double C {0.8};                         // Número de Courant
 constexpr double u {0.5};                         // Velocidade de propagação da onda
-constexpr int N {50};                             // Número de 'nós' na malha
+constexpr int N {200};                             // Número de 'nós' na malha
 constexpr double L{1.0};                          // Domínio espacial
 constexpr auto dx = L/N;                          // Refinamento da discretização
 constexpr auto dt = C*dx/u;                       // Passo de tempo calculado
@@ -44,12 +45,17 @@ int main (int argc, char* argv[]){
 	// Exemplo com método de primeira ordem:
 	std::vector<std::vector<double>> Q_up (nsteps, std::vector<double>(N, 0.0));
 	solve_via_upwind(Q_up);
-	solve_exat(Ext, tf1);
+	fill_initial_cond(Ext);
 	save_data(X, Ext, Q_up[nsteps-1]);
 
+	std::cout << "\nArgumentos obtidos via linha de comando:" << std::endl;
+	for (const auto& e : args){
+		std::cout << e << std::endl;
+	}
+
 	// Exemplo com método de alta ordem:
-	std::vector<std::vector<double>> Q_minmod (nsteps, std::vector<double>(N, 0.0));
-	solve_via_highresolution(Q_minmod, phi_koren);
+	// std::vector<std::vector<double>> Q_minmod (nsteps, std::vector<double>(N, 0.0));
+	// solve_via_highresolution(Q_minmod, phi_koren);
 }
 
 double function_s(double x){
@@ -152,9 +158,9 @@ void solve_via_fromm(std::vector<std::vector<double>>& Q){
 void solve_via_highresolution(std::vector<std::vector<double>>& Q, std::function<double (double)> func){
 	std::cout << "High Resolution solver called..." << std::endl;
 	fill_initial_cond(Q[0]);
-	//Iteração no tempo:
+	// Iteração no tempo:
 	for (int n = 1; n < nsteps; n++){
-		// Iteração nas células espaciais:
+		// Iteração nas células espaciais:-
 		size_t i_next = 0;
 		size_t i_next2 = 0;
 		size_t i_prev = 0;
@@ -205,9 +211,10 @@ void save_data(const std::vector<double>& X, const std::vector<double>& E, const
 		return;
 	}
 	std::fstream printer {"data.txt", std::ios::out|std::ios::trunc};
-	printer << "Pos Exato Numerico" << std::endl;
+	printer << "Posicao Exato Numerico" << std::endl;
+	printer << std::fixed;
 	for (size_t i = 0; i < k; i++){
-		printer << X[i] << ' ' << E[i] << ' ' << A[i] << std::endl;
+		printer << std::setprecision(8) << X[i] << ' ' << E[i] << ' ' << A[i] << std::endl;
 	}
 	std::cout << "\nData saved to \"data.txt\"" << std::endl;
 }
