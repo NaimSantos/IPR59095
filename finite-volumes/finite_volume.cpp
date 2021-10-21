@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cmath>
 #include <vector>
+#include <string>
 #include <fstream>
 #include <algorithm>  //std::max, std::min
 #include <functional>  //std::function
@@ -35,6 +36,8 @@ constexpr double eta = 1e-8;                      // Constante para previnir div
 
 
 int main (int argc, char* argv[]){
+	std::vector<std::string> args(argv, argv + argc);
+
 	auto X = linspace(0.0, L, N);
 	auto Ext = linspace(0.0, L, N);
 
