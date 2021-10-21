@@ -8,6 +8,9 @@
 
 double function_s(double x);
 double function_phi(double x);
+double phi_koren(double teta);
+double phi_ospre(double teta);
+double phi_albada(double teta);
 void solve_via_upwind(std::vector<std::vector<double>>& Q);
 void solve_via_lax(std::vector<std::vector<double>>& Q);
 void solve_via_beam_warming(std::vector<std::vector<double>>& Q);
