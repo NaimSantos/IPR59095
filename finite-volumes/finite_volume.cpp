@@ -28,12 +28,13 @@ constexpr auto dt = C*dx/u;                       // Passo de tempo calculado
 constexpr double t0 {0.0};                        // Início da simulação
 constexpr double tf1 {2.0};                       // Tempo de interesse 1
 constexpr auto nsteps = static_cast<int>(tf1/dt); // Número de passos de tempo
-constexpr auto CFL = u*dt/dx;
+constexpr double eta = 1e-8;                      // Constante para previnir divisão por zero
+
 
 int main (int argc, char* argv[]){
 	auto X = linspace(0.0, L, N);
 	auto Ext = linspace(0.0, L, N);
-	
+
 	// Exemplo com método de primeira ordem:
 	std::vector<std::vector<double>> Q_up (nsteps, std::vector<double>(N, 0.0));
 	solve_via_upwind(Q_up);
@@ -162,13 +163,13 @@ void solve_via_highresolution(std::vector<std::vector<double>>& Q, std::function
 			double teta_prev = 0.0;
 			double teta_next = 0.0;
 			if (u > 0){
-				teta_prev = (Q[n-1, i_prev] - Q[n-1, i_prev2])/(Q[n-1, i] - Q[n-1, i_prev]);
-				teta_next = (Q[n-1, i] - Q[n-1, i_prev])/(Q[n-1, i_next] - Q[n-1, i]);
+				teta_prev = (Q[n-1, i_prev] - Q[n-1, i_prev2])/(Q[n-1, i] - Q[n-1, i_prev] + eta);
+				teta_next = (Q[n-1, i] - Q[n-1, i_prev])/(Q[n-1, i_next] - Q[n-1, i] + eta);
 				Q[n, i] = Q[n-1, i] - C*(Q[n-1, i] - Q[n-1, i_prev]) - 0.5*C*(1 - C)*(func(teta_next)*(Q[n-1, i_next] - Q[n-1, i]) - func(teta_prev)*(Q[n-1, i] - Q[n-1, i_prev]));
 			}
 			else{
-				teta_prev = (Q[n-1, i_next] - Q[n-1, i])/(Q[n-1, i] - Q[n-1, i_prev]);
-				teta_next = (Q[n-1, i_next2] - Q[n-1, i_next])/(Q[n-1, i_next] - Q[n-1, i]);
+				teta_prev = (Q[n-1, i_next] - Q[n-1, i])/(Q[n-1, i] - Q[n-1, i_prev] + eta);
+				teta_next = (Q[n-1, i_next2] - Q[n-1, i_next])/(Q[n-1, i_next] - Q[n-1, i] + eta);
 				Q[n, i] = Q[n-1, i] - C*(Q[n-1, i_next] - Q[n-1, i]) + 0.5*C*(1 + C)*(func(teta_next)*(Q[n-1, i_next] - Q[n-1, i]) - func(teta_prev)*(Q[n-1, i] - Q[n-1, i_prev]));
 			}
 		}
