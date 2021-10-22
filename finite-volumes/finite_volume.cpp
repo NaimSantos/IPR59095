@@ -4,8 +4,8 @@
 #include <vector>
 #include <string>
 #include <fstream>
-#include <algorithm>  //std::max, std::min
-#include <functional>  //std::function
+#include <algorithm>     // std::max, std::min
+#include <functional>    // std::function
 
 
 double function_s(double x);
@@ -26,34 +26,33 @@ std::vector<double> linspace(double start, double end, int num);
 // Variáveis do domínio do problema e da simulação:
 constexpr double C {0.8};                         // Número de Courant
 constexpr double u {0.5};                         // Velocidade de propagação da onda
-constexpr int N {50};                             // Número de 'nós' na malha
+constexpr int N {200};                            // Número de 'nós' na malha
 constexpr double L{1.0};                          // Domínio espacial
 constexpr auto dx = L/N;                          // Refinamento da discretização
 constexpr auto dt = C*dx/u;                       // Passo de tempo calculado
 constexpr double t0 {0.0};                        // Início da simulação
-constexpr double tf1 {10.0};                       // Tempo de interesse 1
+constexpr double tf1 {10.0};                      // Tempo de interesse
 constexpr auto nsteps = static_cast<int>(tf1/dt); // Número de passos de tempo
 constexpr double eta = 1e-8;                      // Constante para previnir divisão por zero
 
 
 int main (int argc, char* argv[]){
 	std::vector<std::string> args(argv, argv + argc);
+	// std::cout << "Argumentos obtidos via linha de comando:" << std::endl;
+	// for (const auto& e : args){
+		// std::cout << e << std::endl;
+	// }
 
 	auto X = linspace(0.0, L, N);
 	auto Ext = linspace(0.0, L, N);
 
-	// Exemplo com método de primeira ordem:
+	// Exemplo com método upwind de primeira ordem:
 	// std::vector<std::vector<double>> Q_up (nsteps, std::vector<double>(N, 0.0));
 	// solve_via_upwind(Q_up);
 	// fill_initial_cond(Ext);
 	// save_data(X, Ext, Q_up[nsteps-1]);
 
-	std::cout << "\nArgumentos obtidos via linha de comando:" << std::endl;
-	for (const auto& e : args){
-		std::cout << e << std::endl;
-	}
-
-	// Exemplo com método de alta ordem:
+	// Exemplo com método de alta precisão:
 	std::vector<std::vector<double>> Q_minmod (nsteps, std::vector<double>(N, 0.0));
 	solve_via_highresolution(Q_minmod, phi_albada);
 	fill_initial_cond(Ext);
@@ -68,17 +67,17 @@ double function_phi(double x){
 	return std::exp(-200*(std::pow(x-0.3, 2))) + function_s(x);
 }
 
-// Função limitadora de fluxo do método TVD Koren: minmod
+// Função limitadora de fluxo do método TVD Koren: Minmod
 double phi_koren(double teta){
-	return std::max<double>(0, std::min<double>(2*teta, std::min<double>((1 + 2*teta)/3, 2)));
+	return std::max(0.0, std::min(2*teta, std::min((1 + 2*teta)/3, 2.0)));
 }
 
-// Função limitadora de fluxo do método TVD Ospre: superbee
+// Função limitadora de fluxo do método TVD Ospre: Superbee
 double phi_ospre(double teta){
 	return 1.5*(teta*teta + teta)/(teta*teta + teta + 1);
 }
 
-// Função limitadora de fluxo do método TVD van Albada: SC
+// Função limitadora de fluxo do método TVD van Albada: MC
 double phi_albada(double teta){
 	return (teta*teta + teta)/(teta*teta + 1);
 }
@@ -97,7 +96,6 @@ void solve_via_upwind(std::vector<std::vector<double>>& Q){
 			Q[n][i] = Q[n-1][i] - C*(Q[n-1][i] - Q[n-1][i_prev]);
 		}
 	}
-	std::cout << "Upwind solver finished." << std::endl;
 }
 
 void solve_via_lax(std::vector<std::vector<double>>& Q){
@@ -116,7 +114,6 @@ void solve_via_lax(std::vector<std::vector<double>>& Q){
 			Q[n][i] = Q[n-1][i] - 0.5*C*((Q[n-1][i_next] - Q[n-1][i_prev]) - C*(Q[n-1][i_prev] - 2*Q[n-1][i] + Q[n-1][i_next]));
 		}
 	}
-	std::cout << "Upwind solver finished." << std::endl;
 }
 
 void solve_via_beam_warming(std::vector<std::vector<double>>& Q){
@@ -173,7 +170,8 @@ void solve_via_highresolution(std::vector<std::vector<double>>& Q, std::function
 			(i_prev == 0) ? i_prev2 = N-1 : i_prev2 = i_prev-1;
 			(i == N-1) ? i_next = 0 : i_next = i+1;
 			(i_next == N-1) ? i_next2 = 0 : i_next2 = i_next+1;
-			
+
+			// Calcula os fluxos:
 			double teta_prev = 0.0;
 			double teta_next = 0.0;
 			if (u > 0){
@@ -191,7 +189,6 @@ void solve_via_highresolution(std::vector<std::vector<double>>& Q, std::function
 }
 
 void fill_initial_cond(std::vector<double>& V){
-	std::cout << "Filling initial condition..." << std::endl;
 	auto k = V.size();
 	if (k == 0)
 		return;
