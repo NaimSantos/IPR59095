@@ -26,12 +26,12 @@ std::vector<double> linspace(double start, double end, int num);
 // Variáveis do domínio do problema e da simulação:
 constexpr double C {0.8};                         // Número de Courant
 constexpr double u {0.5};                         // Velocidade de propagação da onda
-constexpr int N {200};                             // Número de 'nós' na malha
+constexpr int N {50};                             // Número de 'nós' na malha
 constexpr double L{1.0};                          // Domínio espacial
 constexpr auto dx = L/N;                          // Refinamento da discretização
 constexpr auto dt = C*dx/u;                       // Passo de tempo calculado
 constexpr double t0 {0.0};                        // Início da simulação
-constexpr double tf1 {2.0};                       // Tempo de interesse 1
+constexpr double tf1 {10.0};                       // Tempo de interesse 1
 constexpr auto nsteps = static_cast<int>(tf1/dt); // Número de passos de tempo
 constexpr double eta = 1e-8;                      // Constante para previnir divisão por zero
 
@@ -43,10 +43,10 @@ int main (int argc, char* argv[]){
 	auto Ext = linspace(0.0, L, N);
 
 	// Exemplo com método de primeira ordem:
-	std::vector<std::vector<double>> Q_up (nsteps, std::vector<double>(N, 0.0));
-	solve_via_upwind(Q_up);
-	fill_initial_cond(Ext);
-	save_data(X, Ext, Q_up[nsteps-1]);
+	// std::vector<std::vector<double>> Q_up (nsteps, std::vector<double>(N, 0.0));
+	// solve_via_upwind(Q_up);
+	// fill_initial_cond(Ext);
+	// save_data(X, Ext, Q_up[nsteps-1]);
 
 	std::cout << "\nArgumentos obtidos via linha de comando:" << std::endl;
 	for (const auto& e : args){
@@ -54,8 +54,10 @@ int main (int argc, char* argv[]){
 	}
 
 	// Exemplo com método de alta ordem:
-	// std::vector<std::vector<double>> Q_minmod (nsteps, std::vector<double>(N, 0.0));
-	// solve_via_highresolution(Q_minmod, phi_koren);
+	std::vector<std::vector<double>> Q_minmod (nsteps, std::vector<double>(N, 0.0));
+	solve_via_highresolution(Q_minmod, phi_albada);
+	fill_initial_cond(Ext);
+	save_data(X, Ext, Q_minmod[nsteps-1]);
 }
 
 double function_s(double x){
@@ -160,7 +162,7 @@ void solve_via_highresolution(std::vector<std::vector<double>>& Q, std::function
 	fill_initial_cond(Q[0]);
 	// Iteração no tempo:
 	for (int n = 1; n < nsteps; n++){
-		// Iteração nas células espaciais:-
+		// Iteração nas células espaciais:
 		size_t i_next = 0;
 		size_t i_next2 = 0;
 		size_t i_prev = 0;
