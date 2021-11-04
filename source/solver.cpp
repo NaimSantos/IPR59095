@@ -56,17 +56,16 @@ int main(int argc, char* argv[]){
 	double gamma = 0.0;
 	
 	// Iteraçao no tempo:
-	for (size_t n = 0; n < nsteps; n++){
+	for (size_t n = 1; n <= nsteps; n++){
 
 		// Iteração no domínio espacial:
-		
 		for (size_t i = 0; i < N; i++){
 
 			Bi = evaluate_B(P[i]);
 			gamma = (Vb*phi_ref*c_ref)/(Bi);
 
 			// Contorno esquerdo:
-			if (i == 0){                            
+			if (i == 0){
 				T[i][i] = 1.0;                      // CORRIGIR
 				T[i][i] = 1.0;
 				P[i] = P[i+1];                      // CORRIGIR
@@ -95,7 +94,7 @@ int main(int argc, char* argv[]){
 				T[i][i-1] = Wi;                                      // termo anterior
 				T[i][i] =  - (gamma/dt + Wi + Ei ) ;                 // termo na diagonal
 				T[i][i+1] = Ei ;                                     // termo posterior
-	
+
 				P[i] = - P[i] * (gamma/dt);
 			}
 		}
@@ -110,6 +109,7 @@ int main(int argc, char* argv[]){
 }
 
 std::vector<double> tdma2(const std::vector<std::vector<double>>& Mat, const std::vector<double>& X){
+
 	auto n_row = Mat.size();
 	auto n_col = Mat[0].size();
 	if (n_row != n_col || n_row == 0)
@@ -141,7 +141,7 @@ std::vector<double> tdma2(const std::vector<std::vector<double>>& Mat, const std
 	for (int i = n; i-- > 0;){
 		D[i] = D[i] - (C[i]*D[i+1]);
 	}
-	print_array_1D(D);
+
 	return D;
 }
 
@@ -151,6 +151,7 @@ double evaluate_B(const double p){
 
 template <typename T>
 void print_array_1D(const std::vector<T> A){
+
 	auto nrow = A.size();
 	for(int i = 0; i < nrow; i++){
 		std::cout << A[i] << ' ';
@@ -160,6 +161,7 @@ void print_array_1D(const std::vector<T> A){
 
 template <typename T>
 void print_array_2D(const std::vector<std::vector<T>> A){
+
 	auto nrow = A.size();
 	auto ncol = A[0].size();
 	for(int i = 0; i < nrow; i++){
@@ -171,8 +173,9 @@ void print_array_2D(const std::vector<std::vector<T>> A){
 }
 
 void save_data(const std::vector<double>& X, const std::vector<double>& Y){
+
 	std::fstream saver{"output_data.txt", std::ios::out|std::ios::trunc};
-	
+
 	const auto N = X.size();
 	const auto M = Y.size();
 	if ( N != M)
@@ -184,6 +187,7 @@ void save_data(const std::vector<double>& X, const std::vector<double>& Y){
 
 template <typename T>
 std::vector<T> linspace(const double xi, const double xf, int Num){
+
 	if (Num == 0 || Num == 1)
 		Num++;
 
@@ -198,7 +202,7 @@ std::vector<T> linspace(const double xi, const double xf, int Num){
 	return V;
 }
 double media_harmonica(const double a, const double b){
-	return 1.0/(0.5 * (1.0/A + 1.0/B));
+	return 1.0/(0.5 * (1.0/a + 1.0/b));
 }
 /*
 	if (n==1 && i==2){
