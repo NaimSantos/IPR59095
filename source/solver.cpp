@@ -15,7 +15,7 @@ void save_data(const std::vector<double>& X, const std::vector<double>& Y);
 constexpr double k_x {10e-15};       // permeabilidade
 constexpr double phi_ref {0.25};     // porosidade
 constexpr double P_ini {4.5e7};      // Pressão inicial
-constexpr double Lx {100.0};         // dimensão em x
+constexpr double Lx {5000.0};        // dimensão em x
 constexpr double Ly {40.0};          // dimensão em y
 constexpr double Lz {10.0};          // dimensão em z
 constexpr double B0 {1.5};           // B de referência
@@ -52,6 +52,7 @@ int main(int argc, char* argv[]){
 	double Bi_next = 0.0;                   // B(p) na célula i + 1
 	double Bh_prev = 0.0;                   // média harmônica i - 1/2
 	double Bh_next = 0.0;                   // média harmônica i + 1/2
+	double gamma = 0.0;
 	
 	// Iteraçao no tempo:
 	for (size_t n = 0; n < nsteps; n++){
@@ -61,15 +62,23 @@ int main(int argc, char* argv[]){
 		for (size_t i = 0; i < N; i++){
 
 			Bi = evaluate_B(P[i]);
+			gamma = (Vb*phi_ref*c_ref)/(Bi);
+
 			// Contorno esquerdo:
 			if (i == 0){                            
 				T[i][i] = 1.0;                      // CORRIGIR
+				T[i][i] = 1.0;
 				P[i] = P[i+1];                      // CORRIGIR
 			}
 			// Contono direito:
 			else if (i == N-1){
-				T[i][i] = 1.0;                     // CORRIGIR
-				P[i] = P_ini;                      // CORRIGIR
+				Bi_prev = evaluate_B(P[i-1]);
+				Bh_prev = 1.0/(0.5 * (1.0/Bi_prev + 1.0/Bi));
+				Wi = (A_x*k_x)/(dx*mu*Bh_prev);
+
+				T[i][i-1] = - Wi;                     // T[i][N-2]
+				T[i][i] = Wi + gamma/dt;
+				P[i] = P[i-1];
 			}
 			// Células internas:
 			else {
@@ -79,14 +88,14 @@ int main(int argc, char* argv[]){
 				Bh_prev = 1.0/(0.5 * (1.0/Bi_prev + 1.0/Bi));
 				Bh_next = 1.0/(0.5 * (1.0/Bi + 1.0/Bi_next));
 
-				Wi = (A_x * k_x)/(dx * mu * (Bh_prev));
-				Ei = (A_x * k_x)/(dx * mu * (Bh_next));
+				Wi = (A_x * k_x)/(dx*mu*Bh_prev);
+				Ei = (A_x * k_x)/(dx*mu*Bh_next);
 
-				T[i][i-1] = Wi;                                         // termo anterior
-				T[i][i] =  - ((Vb*phi_ref*c_ref)/(Bi*dt) + Wi + Ei ) ;  // termo na diagonal
-				T[i][i+1] = Ei ;                                        // termo posterior
+				T[i][i-1] = Wi;                                      // termo anterior
+				T[i][i] =  - (gamma/dt + Wi + Ei ) ;                 // termo na diagonal
+				T[i][i+1] = Ei ;                                     // termo posterior
 	
-				P[i] = - P[i] * (Vb*phi_ref*c_ref)/(Bi*dt);
+				P[i] = - P[i] * (gamma/dt);
 
 			}
 		}
