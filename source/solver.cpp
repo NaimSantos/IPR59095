@@ -11,6 +11,7 @@ template <typename T> void print_array_1D(const std::vector<T> A);
 template <typename T> void print_array_2D(const std::vector<std::vector<T>> A);
 template <typename T> std::vector<T> linspace(const double xi, const double xf, int Num);
 void save_data(const std::vector<double>& X, const std::vector<double>& Y);
+double media_harmonica(const double a, const double b);
 
 constexpr double k_x {10e-15};       // permeabilidade
 constexpr double phi_ref {0.25};     // porosidade
@@ -85,8 +86,8 @@ int main(int argc, char* argv[]){
 				Bi_prev = evaluate_B(P[i-1]);
 				Bi_next = evaluate_B(P[i+1]);
 				
-				Bh_prev = 1.0/(0.5 * (1.0/Bi_prev + 1.0/Bi));
-				Bh_next = 1.0/(0.5 * (1.0/Bi + 1.0/Bi_next));
+				Bh_prev = media_harmonica(Bi_prev, Bi);
+				Bh_next = media_harmonica(Bi, Bi_next);
 
 				Wi = (A_x * k_x)/(dx*mu*Bh_prev);
 				Ei = (A_x * k_x)/(dx*mu*Bh_next);
@@ -96,7 +97,6 @@ int main(int argc, char* argv[]){
 				T[i][i+1] = Ei ;                                     // termo posterior
 	
 				P[i] = - P[i] * (gamma/dt);
-
 			}
 		}
 		std::cout << "Iteracao " << n << std::endl;
@@ -197,7 +197,9 @@ std::vector<T> linspace(const double xi, const double xf, int Num){
 
 	return V;
 }
-
+double media_harmonica(const double a, const double b){
+	return 1.0/(0.5 * (1.0/A + 1.0/B));
+}
 /*
 	if (n==1 && i==2){
 		std::cout << B[i-1] << '\t' << Bh_prev << '\t' << Bi << '\t' << Bh_next << '\t' << B[i+1] << std::endl;
