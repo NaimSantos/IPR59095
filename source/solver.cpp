@@ -27,8 +27,8 @@ constexpr double A_x {Ly*Lz};        // área
 constexpr int N {11};                // número de células
 constexpr double dx = Lx/N;
 constexpr double ti {0.0};
-constexpr double tf {2.0};
-constexpr double dt {0.5};
+constexpr double tf {1000000.0};
+constexpr double dt {10};
 constexpr auto nsteps = static_cast<int>((tf - ti)/dt);
 
 int main(int argc, char* argv[]){
@@ -54,7 +54,7 @@ int main(int argc, char* argv[]){
 	double Bh_prev = 0.0;                   // média harmônica i - 1/2
 	double Bh_next = 0.0;                   // média harmônica i + 1/2
 	double gamma = 0.0;
-	
+	double C = 450;                        // vazão no lado esquerdo
 	// Iteraçao no tempo:
 	for (size_t n = 1; n <= nsteps; n++){
 
@@ -66,18 +66,22 @@ int main(int argc, char* argv[]){
 
 			// Contorno esquerdo:
 			if (i == 0){
-				T[i][i] = 1.0;                      // CORRIGIR
-				T[i][i] = 1.0;
-				P[i] = P[i+1];                      // CORRIGIR
+				Bi_next = evaluate_B(P[i+1]);
+				Bh_next = media_harmonica(Bi, Bi_next);
+				Ei = (A_x*k_x)/(dx*mu*Bh_next);
+
+				T[i][i] = Ei + (gamma/dt);
+				T[i][i+1] = - Ei;
+				P[i] = P[i]*(gamma/dt) - dx*C;
 			}
 			// Contono direito:
 			else if (i == N-1){
 				Bi_prev = evaluate_B(P[i-1]);
-				Bh_prev = 1.0/(0.5 * (1.0/Bi_prev + 1.0/Bi));
+				Bh_prev = media_harmonica(Bi_prev, Bi);
 				Wi = (A_x*k_x)/(dx*mu*Bh_prev);
 
 				T[i][i-1] = - Wi;                     // T[i][N-2]
-				T[i][i] = Wi + gamma/dt;
+				T[i][i] = Wi + (gamma/dt);
 				P[i] = P[i-1];
 			}
 			// Células internas:
@@ -98,8 +102,9 @@ int main(int argc, char* argv[]){
 				P[i] = - P[i] * (gamma/dt);
 			}
 		}
-		std::cout << "Iteracao " << n << std::endl;
-		print_array_2D(T);
+		if (n%1000 == 0)
+			std::cout << "Iteracao " << n << std::endl;
+		//print_array_2D(T);
 		//std::cout << "Pressao:" << std::endl;
 		//print_array_1D(P);
 		P = tdma2(T, P);
