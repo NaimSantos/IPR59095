@@ -4,8 +4,6 @@
 #include <vector>
 #include <string>
 #include <fstream>
-#include <algorithm>
-#include <iterator> //std::istream_iterator
 
 double evaluate_B(const double p);
 std::vector<double> tdma2(const std::vector<std::vector<double>>& Mat, const std::vector<double>& X);
@@ -16,8 +14,8 @@ void save_data(const std::vector<double>& X, const std::vector<double>& Y);
 
 constexpr double k_x {10e-15};       // permeabilidade
 constexpr double phi_ref {0.25};     // porosidade
-constexpr double P_ini {4.5e7};      // porosidade
-constexpr double Lx {10.0};          // dimensão em x
+constexpr double P_ini {4.5e7};      // Pressão inicial
+constexpr double Lx {100.0};         // dimensão em x
 constexpr double Ly {40.0};          // dimensão em y
 constexpr double Lz {10.0};          // dimensão em z
 constexpr double B0 {1.5};           // B de referência
@@ -38,13 +36,13 @@ int main(int argc, char* argv[]){
 	for (const auto& arg : args){
 		std::cout << arg << std::endl;
 	}
+
 	auto X = linspace<double>(0.0, Lx, N);
+	
 	// Vetores:
 	std::vector<double> P (N, P_ini);                                    // vetor com as pressões
 	std::vector<double> P_old (N, P_ini);                                // vetor com as pressões anteriores
-	std::vector<double> B (N, B0);                                       // vetor B;
 	std::vector<std::vector<double>> T (N, std::vector<double>(N, 0.0)); // matriz de transmissibilidades
-	
 	
 	// Variáveis utilizadas no processo iterativo:
 	double Ei = 0.0;                        // Transmissibilidade à direita da célula i
