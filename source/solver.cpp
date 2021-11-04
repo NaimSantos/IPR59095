@@ -65,13 +65,13 @@ int main(int argc, char* argv[]){
 			Bi = evaluate_B(P[i]);
 			// Contorno esquerdo:
 			if (i == 0){                            
-				T[i][i] = 1.0;                      // primeira linha da matriz de coeficientes
-				P[i] = P[i+1];                       // pressão preescrita em i = 0
+				T[i][i] = 1.0;                      // CORRIGIR
+				P[i] = P[i+1];                      // CORRIGIR
 			}
 			// Contono direito:
 			else if (i == N-1){
-				T[i][i] = 1.0;                     // última linha da matriz de coeficientes
-				P[i] = P_ini;                      // pressão preescrita em i = 0
+				T[i][i] = 1.0;                     // CORRIGIR
+				P[i] = P_ini;                      // CORRIGIR
 			}
 			// Células internas:
 			else {
