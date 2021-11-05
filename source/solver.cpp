@@ -5,6 +5,7 @@
 #include <string>
 #include <fstream>
 
+void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<double>& P);
 double evaluate_B(const double p);
 std::vector<double> solve_by_tdma(const std::vector<std::vector<double>>& Mat, const std::vector<double>& X);
 template <typename T> void print_array_1D(const std::vector<T> A);
@@ -40,9 +41,15 @@ int main(int argc, char* argv[]){
 	}
 	*/
 
-	auto X = linspace<double>(0.0, Lx, N);                     // vetor para plotar P por x
+	auto Pos = linspace<double>(0.0, Lx, N);                    // vetor para plotar P por x
 	std::vector<double> P (N, P_ini);                          // vetor com as pressões
-	std::vector<std::vector<double>> Trans (N, std::vector<double>(N, 0.0)); // matriz de transmissibilidades
+	std::vector<std::vector<double>> T (N, std::vector<double>(N, 0.0)); // matriz de transmissibilidades
+
+	evaluate_pressure(T, Pressure);
+	save_data(Pos, Pressure);
+}
+
+void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<double>& P){
 
 	// Variáveis utilizadas no processo iterativo:
 	double Ei = 0.0;                        // Transmissibilidade à direita da célula i
@@ -107,9 +114,8 @@ int main(int argc, char* argv[]){
 
 		P = solve_by_tdma(Trans, P);
 	}
-	save_data(X, P);
-
 }
+
 
 std::vector<double> solve_by_tdma(const std::vector<std::vector<double>>& Mat, const std::vector<double>& X){
 
