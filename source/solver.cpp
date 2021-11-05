@@ -83,7 +83,6 @@ void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<doub
 			// Contono direito:
 			else if (i == N-1){
 				Bi_prev = evaluate_B(P[i-1]);
-				Bh_prev = media_harmonica(Bi_prev, Bi);
 				Wi = (A_x*k_x)/(dx*mu*media_harmonica(Bi_prev, Bi));
 
 				Trans[i][i-1] = Wi;
@@ -210,12 +209,7 @@ std::vector<T> linspace(const double xi, const double xf, int Num){
 
 	return V;
 }
+
 double media_harmonica(const double a, const double b){
 	return 1.0/(0.5 * (1.0/a + 1.0/b));
 }
-/*
-	if (n==1 && i==2){
-		std::cout << B[i-1] << '\t' << Bh_prev << '\t' << Bi << '\t' << Bh_next << '\t' << B[i+1] << std::endl;
-	}
-
-*/
