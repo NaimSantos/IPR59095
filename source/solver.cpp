@@ -11,7 +11,8 @@ std::vector<double> solve_by_tdma(const std::vector<std::vector<double>>& Mat, c
 template <typename T> void print_array_1D(const std::vector<T> A);
 template <typename T> void print_array_2D(const std::vector<std::vector<T>> A);
 template <typename T> std::vector<T> linspace(const double xi, const double xf, int Num);
-void save_data(const std::vector<double>& X, const std::vector<double>& Y);
+void save_pressure_data(const std::vector<double>& X, const std::vector<double>& Y);
+void save_pressure_evolution(std::fstream& saver, const double Dia, const double Press);
 double media_harmonica(const double a, const double b);
 
 constexpr double k_x {10e-15};       // permeabilidade
@@ -44,11 +45,8 @@ int main(int argc, char* argv[]){
 	std::vector<std::vector<double>> T (N, std::vector<double>(N, 0.0)); // matriz de transmissibilidades
 
 	evaluate_pressure(T, Pressure);
-	save_data(Pos, Pressure);
+	save_pressure_data(Pos, Pressure);
 
-	/* TODO:
-	 função para salvar a evolução da pressao com o tempo em pontos dados.
-	*/
 }
 
 void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<double>& P){
@@ -61,6 +59,13 @@ void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<doub
 	double Bi_next = 0.0;                   // B(p) na célula i + 1
 	double gamma = 0.0;
 	double D = 3.0;                         // vazão no lado esquerdo
+
+	// Para salvar a evolução no tempo:
+	std::string filename {"time_evolution_data.txt"};
+	std::fstream time_file{filename, std::ios::out|std::ios::trunc};
+	time_file << std::setw(10) << "Dias" << std::setw(10) << "Pressao (kPa)" << std::endl;
+	std::fstream time_data{filename, std::ios::out|std::ios::app};
+
 
 	// Iteraçao no tempo:
 	for (size_t n = 1; n <= nsteps; n++){
@@ -80,7 +85,7 @@ void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<doub
 				Trans[i][i+1] = Ei;
 				P[i] = -P[i]*(gamma/dt) + dx*D;
 			}
-			// Contono direito:
+			// Contorno direito:
 			else if (i == N-1){
 				Bi_prev = evaluate_B(P[i-1]);
 				Wi = (A_x*k_x)/(dx*mu*media_harmonica(Bi_prev, Bi));
@@ -104,10 +109,18 @@ void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<doub
 				P[i] = - P[i] * (gamma/dt);
 			}
 		}
-		if (n%1000 == 0)
-			std::cout << "Passo de tempo " << n << std::endl;
 
 		P = solve_by_tdma(Trans, P);
+
+		// Registrar a evolução no tempo:
+		/*
+		double total_steps = nsteps*1.0;
+		if (n%5000 == 0){
+			double prg = 100*n/total_steps;
+			std::cout << "Progresso: " << std::setprecision(2) << std::fixed <<  prg << " \%" << std::endl;
+		}
+		*/
+		save_pressure_evolution(time_data, n*dt, P[0]);
 	}
 }
 
@@ -176,9 +189,9 @@ void print_array_2D(const std::vector<std::vector<T>> A){
 	}
 }
 
-void save_data(const std::vector<double>& X, const std::vector<double>& Y){
+void save_pressure_data(const std::vector<double>& X, const std::vector<double>& Y){
 	static int a {1};
-	std::string init {"output_data_"};
+	std::string init {"pressure_data_"};
 	std::string filename = init + std::to_string(a) + ".txt";
 	std::fstream saver{filename, std::ios::out|std::ios::trunc};
 
@@ -192,6 +205,11 @@ void save_data(const std::vector<double>& X, const std::vector<double>& Y){
 	}
 	a++;
 }
+
+void save_pressure_evolution(std::fstream& saver, const double Dia, const double Press){
+	saver << std::setw(10) << Dia << " " << std::setw(10) << Press/1000 << std::endl;
+}
+
 
 template <typename T>
 std::vector<T> linspace(const double xi, const double xf, int Num){
