@@ -104,13 +104,11 @@ int main(int argc, char* argv[]){
 		}
 		if (n%1000 == 0)
 			std::cout << "Passo de tempo " << n << std::endl;
-		//print_array_2D(Trans);
-		//std::cout << "Pressao:" << std::endl;
-		//print_array_1D(P);
+
 		P = solve_by_tdma(Trans, P);
 	}
 	save_data(X, P);
-	
+
 }
 
 std::vector<double> solve_by_tdma(const std::vector<std::vector<double>>& Mat, const std::vector<double>& X){
