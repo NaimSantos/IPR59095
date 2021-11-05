@@ -59,8 +59,6 @@ void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<doub
 	double Bi = 0.0;                        // B(p) na célula i
 	double Bi_prev = 0.0;                   // B(p) na célula i - 1
 	double Bi_next = 0.0;                   // B(p) na célula i + 1
-	double Bh_prev = 0.0;                   // média harmônica i - 1/2
-	double Bh_next = 0.0;                   // média harmônica i + 1/2
 	double gamma = 0.0;
 	double D = 3.0;                         // vazão no lado esquerdo
 
@@ -76,8 +74,7 @@ void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<doub
 			// Contorno esquerdo:
 			if (i == 0){
 				Bi_next = evaluate_B(P[i+1]);
-				Bh_next = media_harmonica(Bi, Bi_next);
-				Ei = (A_x*k_x)/(dx*mu*Bh_next);
+				Ei = (A_x*k_x)/(dx*mu*media_harmonica(Bi, Bi_next));
 
 				Trans[i][i] = - (Ei + gamma/dt);
 				Trans[i][i+1] = Ei;
@@ -87,7 +84,7 @@ void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<doub
 			else if (i == N-1){
 				Bi_prev = evaluate_B(P[i-1]);
 				Bh_prev = media_harmonica(Bi_prev, Bi);
-				Wi = (A_x*k_x)/(dx*mu*Bh_prev);
+				Wi = (A_x*k_x)/(dx*mu*media_harmonica(Bi_prev, Bi));
 
 				Trans[i][i-1] = Wi;
 				Trans[i][i] = - (Wi + gamma/dt);
@@ -98,11 +95,8 @@ void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<doub
 				Bi_prev = evaluate_B(P[i-1]);
 				Bi_next = evaluate_B(P[i+1]);
 
-				Bh_prev = media_harmonica(Bi_prev, Bi);
-				Bh_next = media_harmonica(Bi, Bi_next);
-
-				Wi = (A_x*k_x)/(dx*mu*Bh_prev);
-				Ei = (A_x*k_x)/(dx*mu*Bh_next);
+				Wi = (A_x*k_x)/(dx*mu*media_harmonica(Bi_prev, Bi));
+				Ei = (A_x*k_x)/(dx*mu*media_harmonica(Bi, Bi_next));
 
 				Trans[i][i-1] = Wi;                                      // termo à esquerda
 				Trans[i][i] =  - (Wi + (gamma/dt) + Ei ) ;               // termo na diagonal
