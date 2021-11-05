@@ -6,7 +6,7 @@
 #include <fstream>
 
 double evaluate_B(const double p);
-std::vector<double> tdma2(const std::vector<std::vector<double>>& Mat, const std::vector<double>& X);
+std::vector<double> solve_by_tdma(const std::vector<std::vector<double>>& Mat, const std::vector<double>& X);
 template <typename T> void print_array_1D(const std::vector<T> A);
 template <typename T> void print_array_2D(const std::vector<std::vector<T>> A);
 template <typename T> std::vector<T> linspace(const double xi, const double xf, int Num);
@@ -24,7 +24,7 @@ constexpr double mu {1.2e-3};        // viscosidade
 constexpr double c_ref {6.0e-10};    // compressibilidade
 constexpr double Vb {Lx*Ly*Lz};      // volume
 constexpr double A_x {Ly*Lz};        // área
-constexpr int N {51};                // número de células
+constexpr int N {50};                // número de células
 constexpr double dx = Lx/N;
 constexpr double ti {0.0};
 constexpr double tf {1000000.0};
@@ -32,17 +32,16 @@ constexpr double dt {10};
 constexpr auto nsteps = static_cast<int>((tf - ti)/dt);
 
 int main(int argc, char* argv[]){
+	/*
 	std::vector<std::string> args(argv, argv + argc);
 	std::cout << "Argumentos obtidos via linha de comando:" << std::endl;
 	for (const auto& arg : args){
 		std::cout << arg << std::endl;
 	}
+	*/
 
-	auto X = linspace<double>(0.0, Lx, N);
-
-	// Vetores:
+	auto X = linspace<double>(0.0, Lx, N);                     // vetor para plotar P por x
 	std::vector<double> P (N, P_ini);                          // vetor com as pressões
-	std::vector<double> P_old (N, P_ini);                      // vetor com as pressões anteriores
 	std::vector<std::vector<double>> Trans (N, std::vector<double>(N, 0.0)); // matriz de transmissibilidades
 
 	// Variáveis utilizadas no processo iterativo:
@@ -108,13 +107,13 @@ int main(int argc, char* argv[]){
 		//print_array_2D(Trans);
 		//std::cout << "Pressao:" << std::endl;
 		//print_array_1D(P);
-		P = tdma2(Trans, P);
+		P = solve_by_tdma(Trans, P);
 	}
 	save_data(X, P);
 	
 }
 
-std::vector<double> tdma2(const std::vector<std::vector<double>>& Mat, const std::vector<double>& X){
+std::vector<double> solve_by_tdma(const std::vector<std::vector<double>>& Mat, const std::vector<double>& X){
 
 	auto n_row = Mat.size();
 	auto n_col = Mat[0].size();
@@ -184,6 +183,7 @@ void save_data(const std::vector<double>& X, const std::vector<double>& Y){
 	std::string filename = init + std::to_string(a) + ".txt";
 	std::fstream saver{filename, std::ios::out|std::ios::trunc};
 
+	saver << std::setw(10) << "x (m)" << std::setw(10) << "Pressao (kPa)" << std::endl;
 	const auto N = X.size();
 	const auto M = Y.size();
 	if ( N != M)
