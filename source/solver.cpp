@@ -24,7 +24,7 @@ constexpr double mu {1.2e-3};        // viscosidade
 constexpr double c_ref {6.0e-10};    // compressibilidade
 constexpr double Vb {Lx*Ly*Lz};      // volume
 constexpr double A_x {Ly*Lz};        // área
-constexpr int N {11};                // número de células
+constexpr int N {51};                // número de células
 constexpr double dx = Lx/N;
 constexpr double ti {0.0};
 constexpr double tf {1000000.0};
@@ -39,12 +39,12 @@ int main(int argc, char* argv[]){
 	}
 
 	auto X = linspace<double>(0.0, Lx, N);
-	
+
 	// Vetores:
-	std::vector<double> P (N, P_ini);                                    // vetor com as pressões
-	std::vector<double> P_old (N, P_ini);                                // vetor com as pressões anteriores
-	std::vector<std::vector<double>> T (N, std::vector<double>(N, 0.0)); // matriz de transmissibilidades
-	
+	std::vector<double> P (N, P_ini);                          // vetor com as pressões
+	std::vector<double> P_old (N, P_ini);                      // vetor com as pressões anteriores
+	std::vector<std::vector<double>> Trans (N, std::vector<double>(N, 0.0)); // matriz de transmissibilidades
+
 	// Variáveis utilizadas no processo iterativo:
 	double Ei = 0.0;                        // Transmissibilidade à direita da célula i
 	double Wi = 0.0;                        // Transmissibilidade à esquerda da célula i
@@ -54,7 +54,8 @@ int main(int argc, char* argv[]){
 	double Bh_prev = 0.0;                   // média harmônica i - 1/2
 	double Bh_next = 0.0;                   // média harmônica i + 1/2
 	double gamma = 0.0;
-	double C = 450;                        // vazão no lado esquerdo
+	double D = 3.0;                         // vazão no lado esquerdo
+
 	// Iteraçao no tempo:
 	for (size_t n = 1; n <= nsteps; n++){
 
@@ -62,7 +63,7 @@ int main(int argc, char* argv[]){
 		for (size_t i = 0; i < N; i++){
 
 			Bi = evaluate_B(P[i]);
-			gamma = (Vb*phi_ref*c_ref)/(Bi);
+			gamma = Vb*phi_ref*c_ref/Bi;
 
 			// Contorno esquerdo:
 			if (i == 0){
@@ -70,9 +71,9 @@ int main(int argc, char* argv[]){
 				Bh_next = media_harmonica(Bi, Bi_next);
 				Ei = (A_x*k_x)/(dx*mu*Bh_next);
 
-				T[i][i] = Ei + (gamma/dt);
-				T[i][i+1] = - Ei;
-				P[i] = P[i]*(gamma/dt) - dx*C;
+				Trans[i][i] = - (Ei + gamma/dt);
+				Trans[i][i+1] = Ei;
+				P[i] = -P[i]*(gamma/dt) + dx*D;
 			}
 			// Contono direito:
 			else if (i == N-1){
@@ -80,34 +81,34 @@ int main(int argc, char* argv[]){
 				Bh_prev = media_harmonica(Bi_prev, Bi);
 				Wi = (A_x*k_x)/(dx*mu*Bh_prev);
 
-				T[i][i-1] = - Wi;                     // T[i][N-2]
-				T[i][i] = Wi + (gamma/dt);
-				P[i] = P[i-1];
+				Trans[i][i-1] = Wi;
+				Trans[i][i] = - (Wi + gamma/dt);
+				P[i] = -P[i]*(gamma/dt);
 			}
 			// Células internas:
 			else {
 				Bi_prev = evaluate_B(P[i-1]);
 				Bi_next = evaluate_B(P[i+1]);
-				
+
 				Bh_prev = media_harmonica(Bi_prev, Bi);
 				Bh_next = media_harmonica(Bi, Bi_next);
 
-				Wi = (A_x * k_x)/(dx*mu*Bh_prev);
-				Ei = (A_x * k_x)/(dx*mu*Bh_next);
+				Wi = (A_x*k_x)/(dx*mu*Bh_prev);
+				Ei = (A_x*k_x)/(dx*mu*Bh_next);
 
-				T[i][i-1] = Wi;                                      // termo anterior
-				T[i][i] =  - (gamma/dt + Wi + Ei ) ;                 // termo na diagonal
-				T[i][i+1] = Ei ;                                     // termo posterior
+				Trans[i][i-1] = Wi;                                      // termo à esquerda
+				Trans[i][i] =  - (Wi + (gamma/dt) + Ei ) ;               // termo na diagonal
+				Trans[i][i+1] = Ei ;                                     // termo à direita
 
 				P[i] = - P[i] * (gamma/dt);
 			}
 		}
 		if (n%1000 == 0)
-			std::cout << "Iteracao " << n << std::endl;
-		//print_array_2D(T);
+			std::cout << "Passo de tempo " << n << std::endl;
+		//print_array_2D(Trans);
 		//std::cout << "Pressao:" << std::endl;
 		//print_array_1D(P);
-		P = tdma2(T, P);
+		P = tdma2(Trans, P);
 	}
 	save_data(X, P);
 	
@@ -178,16 +179,19 @@ void print_array_2D(const std::vector<std::vector<T>> A){
 }
 
 void save_data(const std::vector<double>& X, const std::vector<double>& Y){
-
-	std::fstream saver{"output_data.txt", std::ios::out|std::ios::trunc};
+	static int a {1};
+	std::string init {"output_data_"};
+	std::string filename = init + std::to_string(a) + ".txt";
+	std::fstream saver{filename, std::ios::out|std::ios::trunc};
 
 	const auto N = X.size();
 	const auto M = Y.size();
 	if ( N != M)
 		return;
 	for (int i = 0; i < N; i++){
-		saver << std::setw(10) << X[i] << " " << std::setw(10) << Y[i] << std::endl;
+		saver << std::setw(10) << X[i] << " " << std::setw(10) << Y[i]/1000 << std::endl;
 	}
+	a++;
 }
 
 template <typename T>
