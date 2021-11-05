@@ -33,20 +33,22 @@ constexpr double dt {10};
 constexpr auto nsteps = static_cast<int>((tf - ti)/dt);
 
 int main(int argc, char* argv[]){
-	/*
 	std::vector<std::string> args(argv, argv + argc);
 	std::cout << "Argumentos obtidos via linha de comando:" << std::endl;
 	for (const auto& arg : args){
 		std::cout << arg << std::endl;
 	}
-	*/
 
-	auto Pos = linspace<double>(0.0, Lx, N);                    // vetor para plotar P por x
-	std::vector<double> P (N, P_ini);                          // vetor com as pressões
+	auto Pos = linspace<double>(0.0, Lx, N);                             // vetor para plotar P por x
+	std::vector<double> Pressure (N, P_ini);                             // vetor com as pressões
 	std::vector<std::vector<double>> T (N, std::vector<double>(N, 0.0)); // matriz de transmissibilidades
 
 	evaluate_pressure(T, Pressure);
 	save_data(Pos, Pressure);
+
+	/* TODO:
+	 função para salvar a evolução da pressao com o tempo em pontos dados.
+	*/
 }
 
 void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<double>& P){
