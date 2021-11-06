@@ -28,6 +28,7 @@ constexpr double Vb {Lx*Ly*Lz};      // volume
 constexpr double A_x {Ly*Lz};        // área
 constexpr int N {50};                // número de células
 constexpr double dx = Lx/N;
+constexpr int factor {86400};        // fator de conversão segundos/dia
 constexpr double ti {0.0};
 constexpr double tf {1000000.0};
 constexpr double dt {10};
@@ -57,7 +58,7 @@ void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<doub
 	double Bi = 0.0;                        // B(p) na célula i
 	double Bi_prev = 0.0;                   // B(p) na célula i - 1
 	double Bi_next = 0.0;                   // B(p) na célula i + 1
-	double gamma = 0.0;
+	double gamma = 0.0;                     // Vb*phi_ref*c_ref/Bi;
 	double D = 3.0;                         // vazão no lado esquerdo
 
 	// Para salvar a evolução no tempo:
