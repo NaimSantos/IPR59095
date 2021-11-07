@@ -14,6 +14,7 @@ template <typename T> std::vector<T> linspace(const double xi, const double xf, 
 void save_pressure_data(const std::vector<double>& X, const std::vector<double>& Y);
 void save_pressure_evolution(std::fstream& saver, const double Dia, const double Press);
 double media_harmonica(const double a, const double b);
+void teste_tdma();
 
 constexpr double k_x {10e-15};       // permeabilidade
 constexpr double phi_ref {0.25};     // porosidade
@@ -30,16 +31,20 @@ constexpr int N {50};                // número de células
 constexpr double dx = Lx/N;
 constexpr int factor {86400};        // fator de conversão segundos/dia
 constexpr double ti {0.0};
-constexpr double tf {1000000.0};
-constexpr double dt {10};
+constexpr double tf {1000.0};
+constexpr double dt {2};
 constexpr auto nsteps = static_cast<int>((tf - ti)/dt);
 
 int main(int argc, char* argv[]){
+	/*
 	std::vector<std::string> args(argv, argv + argc);
 	std::cout << "Argumentos obtidos via linha de comando:" << std::endl;
 	for (const auto& arg : args){
 		std::cout << arg << std::endl;
 	}
+	*/
+	if (argc > 1)
+		teste_tdma();
 
 	auto Pos = linspace<double>(0.0, Lx, N);                             // vetor para plotar P por x
 	std::vector<double> Pressure (N, P_ini);                             // vetor com as pressões
@@ -47,7 +52,7 @@ int main(int argc, char* argv[]){
 
 	evaluate_pressure(T, Pressure);
 	save_pressure_data(Pos, Pressure);
-
+	
 }
 
 void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<double>& P){
@@ -64,7 +69,7 @@ void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<doub
 	// Para salvar a evolução no tempo:
 	std::string filename {"time_evolution_data.txt"};
 	std::fstream time_file{filename, std::ios::out|std::ios::trunc};
-	time_file << std::setw(10) << "Dias" << std::setw(10) << "Pressao (kPa)" << std::endl;
+	time_file << std::setw(10) << "Dias " << std::setw(10) << "Pressao (kPa)" << std::endl;
 	std::fstream time_data{filename, std::ios::out|std::ios::app};
 
 
@@ -75,7 +80,7 @@ void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<doub
 		for (size_t i = 0; i < N; i++){
 
 			Bi = evaluate_B(P[i]);
-			gamma = Vb*phi_ref*c_ref/Bi;
+			gamma = Vb*phi_ref*c_ref/B0;
 
 			// Contorno esquerdo:
 			if (i == 0){
@@ -84,7 +89,7 @@ void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<doub
 
 				Trans[i][i] = - (Ei + gamma/dt);
 				Trans[i][i+1] = Ei;
-				P[i] = -P[i]*(gamma/dt) + dx*D;
+				P[i] = -P[i]*(gamma/dt) + D;
 			}
 			// Contorno direito:
 			else if (i == N-1){
@@ -138,6 +143,7 @@ std::vector<double> solve_by_tdma(const std::vector<std::vector<double>>& Mat, c
 	std::vector<double> C (n_row, 0.0) ;
 	std::vector<double> D = X;
 
+	// Preenchimento:
 	for (size_t i = 0; i < (n_row-1); i++){
 		size_t j = i;
 		B[i] = Mat[i][j];       // diagonal principal
@@ -145,12 +151,13 @@ std::vector<double> solve_by_tdma(const std::vector<std::vector<double>>& Mat, c
 		C[i] = Mat[i][j+1];     // diagonal superior
 	}
 	B[n_row-1] = Mat[n_row-1][n_col-1];
+	
 
 	C[0] /= B[0];
 	D[0] /= B[0];
 	int n = D.size()-1;
 	for (int i = 1; i < n; i++){
-		C[i] = (C[i] ) / (B[i] - A[i]*C[i-1]);
+		C[i] = C[i] / (B[i] - A[i]*C[i-1]);
 		D[i] = (D[i] - A[i]*D[i-1]) / (B[i] - A[i]*C[i-1]);
 	}
 
@@ -184,7 +191,7 @@ void print_array_2D(const std::vector<std::vector<T>> A){
 	auto ncol = A[0].size();
 	for(int i = 0; i < nrow; i++){
 		for(int j = 0; j < ncol; j++){
-			std::cout << std::setw(12) << A[i][j] << ' ';
+			std::cout << std::setw(6) << A[i][j] << ' ';
 		}
 		std::cout << '\n';
 	}
@@ -231,4 +238,25 @@ std::vector<T> linspace(const double xi, const double xf, int Num){
 
 double media_harmonica(const double a, const double b){
 	return 1.0/(0.5 * (1.0/a + 1.0/b));
+}
+
+void teste_tdma(){
+
+	std::vector<std::vector<double>> A {
+										{4.0, 1.0, 0.0, 0.0},
+										{1.0, 3.0, 2.0, 0.0},
+										{0.0, 2.0, 7.0, 6.0},
+										{0.0, 0.0, -4.0, 3.0}
+										};
+	std::vector<double> B {11, 14, 31.5, 1.5};
+	std::vector<double> Res = solve_by_tdma(A, B);
+	std::cout << "----Teste com o Algoritmo de Thomas----" << std::endl;
+	std::cout << "Matriz A: " << std::endl;
+	print_array_2D<double>(A);
+	std::cout << "Vetor B: " << std::endl;
+	print_array_1D<double>(B);
+	std::cout << "\nSolucao via TDMA: ";
+	for (const auto& x : Res)
+		std::cout << x << " ";
+	std::cout << std::endl;
 }
