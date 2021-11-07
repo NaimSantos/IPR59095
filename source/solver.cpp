@@ -63,7 +63,7 @@ void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<doub
 	double Bi = 0.0;                        // B(p) na célula i
 	double Bi_prev = 0.0;                   // B(p) na célula i - 1
 	double Bi_next = 0.0;                   // B(p) na célula i + 1
-	double gamma = 0.0;                     // Vb*phi_ref*c_ref/Bi;
+	double gamma = Vb*phi_ref*c_ref/B       // Vb*phi_ref*c_ref/Bi;
 	double D = 3.0;                         // vazão no lado esquerdo
 
 	// Para salvar a evolução no tempo:
@@ -80,7 +80,6 @@ void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<doub
 		for (size_t i = 0; i < N; i++){
 
 			Bi = evaluate_B(P[i]);
-			gamma = Vb*phi_ref*c_ref/B0;
 
 			// Contorno esquerdo:
 			if (i == 0){
@@ -91,6 +90,7 @@ void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<doub
 				Trans[i][i+1] = Ei;
 				P[i] = -P[i]*(gamma/dt) + D;
 			}
+
 			// Contorno direito:
 			else if (i == N-1){
 				Bi_prev = evaluate_B(P[i-1]);
@@ -100,6 +100,7 @@ void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<doub
 				Trans[i][i] = - (Wi + gamma/dt);
 				P[i] = -P[i]*(gamma/dt);
 			}
+
 			// Células internas:
 			else {
 				Bi_prev = evaluate_B(P[i-1]);
