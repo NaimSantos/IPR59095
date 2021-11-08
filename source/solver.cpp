@@ -216,7 +216,7 @@ void save_pressure_data(const std::vector<double>& X, const std::vector<double>&
 }
 
 void save_pressure_evolution(std::fstream& saver, const double Dia, const double Press){
-	saver << std::setw(10) << Dia << " " << std::setw(10) << Press/1000 << std::endl;
+	saver << std::setw(10) << Dia/factor << " " << std::setw(10) << Press/1000 << std::endl;
 }
 
 
