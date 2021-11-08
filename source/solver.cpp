@@ -31,8 +31,8 @@ constexpr int N {50};                // número de células
 constexpr double dx = Lx/N;
 constexpr int factor {86400};        // fator de conversão segundos/dia
 constexpr double ti {0.0};
-constexpr double tf {1000.0};
-constexpr double dt {2};
+constexpr double tf {100.0*factor};
+constexpr double dt {1.0*factor};
 constexpr auto nsteps = static_cast<int>((tf - ti)/dt);
 
 int main(int argc, char* argv[]){
