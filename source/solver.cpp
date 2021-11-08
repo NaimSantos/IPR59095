@@ -27,13 +27,13 @@ constexpr double mu {1.2e-3};        // viscosidade
 constexpr double c_ref {6.0e-10};    // compressibilidade
 constexpr double Vb {Lx*Ly*Lz};      // volume
 constexpr double A_x {Ly*Lz};        // área
-constexpr int N {50};                // número de células
+constexpr int N {100};               // número de células
 constexpr double dx = Lx/N;
 constexpr int factor {86400};        // fator de conversão segundos/dia
 constexpr double D {4.0/factor};     // vazão no lado esquerdo
 constexpr double ti {0.0};
-constexpr double tf {100.0*factor};
-constexpr double dt {1.0*factor};
+constexpr double tf {100*factor};
+constexpr double dt {0.5*factor};
 constexpr auto nsteps = static_cast<int>((tf - ti)/dt);
 
 int main(int argc, char* argv[]){
