@@ -63,7 +63,7 @@ void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<doub
 	double Bi = 0.0;                        // B(p) na célula i
 	double Bi_prev = 0.0;                   // B(p) na célula i - 1
 	double Bi_next = 0.0;                   // B(p) na célula i + 1
-	double gamma = Vb*phi_ref*c_ref/B       // Vb*phi_ref*c_ref/Bi;
+	double gamma = Vb*phi_ref*c_ref/B0;      // Vb*phi_ref*c_ref/Bi;
 	double D = 3.0;                         // vazão no lado esquerdo
 
 	// Para salvar a evolução no tempo:
