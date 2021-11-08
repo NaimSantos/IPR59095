@@ -13,7 +13,7 @@ template <typename T> void print_array_2D(const std::vector<std::vector<T>> A);
 template <typename T> std::vector<T> linspace(const double xi, const double xf, int Num);
 void save_pressure_data(const std::vector<double>& X, const std::vector<double>& Y);
 void save_pressure_evolution(std::fstream& saver, const double Dia, const double Press);
-double media_harmonica(const double a, const double b);
+double media(const double a, const double b);
 void teste_tdma();
 
 constexpr double k_x {10e-15};       // permeabilidade
@@ -27,12 +27,12 @@ constexpr double mu {1.2e-3};        // viscosidade
 constexpr double c_ref {6.0e-10};    // compressibilidade
 constexpr double Vb {Lx*Ly*Lz};      // volume
 constexpr double A_x {Ly*Lz};        // área
-constexpr int N {5};                 // número de células
+constexpr int N {256};               // número de células
 constexpr double dx = Lx/N;
 constexpr int factor {86400};        // fator de conversão segundos/dia
 constexpr double D {400.0/factor};   // vazão no lado esquerdo
 constexpr double ti {0.0};
-constexpr double tf {100*factor};
+constexpr double tf {10*365*factor};
 constexpr double dt {0.5*factor};
 constexpr auto nsteps = static_cast<int>((tf - ti)/dt);
 
@@ -84,21 +84,18 @@ void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<doub
 			// Contorno esquerdo:
 			if (i == 0){
 				Bi_next = evaluate_B(P[i+1]);
-				Ei = (A_x*k_x)/(dx*mu*media_harmonica(Bi, Bi_next));
+				Ei = (A_x*k_x)/(dx*mu*media(Bi, Bi_next));
+				Wi = (A_x*k_x)/(dx*mu*media(evaluate_B(P[i] - D*dx), Bi));
 
 				Trans[i][i] = - (Ei + gamma/dt);
-				Trans[i][i+1] = Ei;
-				double p0 = P[i] - D*dx;
-				double T_prev = (A_x*k_x)/(dx*mu*media_harmonica(Bi, evaluate_B(p0)));
-				if (n==1)
-					std::cout << "p0 = " << p0 << " T_prev = "<< T_prev << std::endl;
-				P[i] = -P[i]*(gamma/dt) + (T_prev);
+				Trans[i][i+1] = Ei;				
+				P[i] = -P[i]*(gamma/dt) + (Wi*D*dx);
 			}
 
 			// Contorno direito:
 			else if (i == N-1){
 				Bi_prev = evaluate_B(P[i-1]);
-				Wi = (A_x*k_x)/(dx*mu*media_harmonica(Bi_prev, Bi));
+				Wi = (A_x*k_x)/(dx*mu*media(Bi_prev, Bi));
 
 				Trans[i][i-1] = Wi;
 				Trans[i][i] = - (Wi + gamma/dt);
@@ -110,8 +107,8 @@ void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<doub
 				Bi_prev = evaluate_B(P[i-1]);
 				Bi_next = evaluate_B(P[i+1]);
 
-				Wi = (A_x*k_x)/(dx*mu*media_harmonica(Bi_prev, Bi));
-				Ei = (A_x*k_x)/(dx*mu*media_harmonica(Bi, Bi_next));
+				Wi = (A_x*k_x)/(dx*mu*media(Bi_prev, Bi));
+				Ei = (A_x*k_x)/(dx*mu*media(Bi, Bi_next));
 
 				Trans[i][i-1] = Wi;                                      // termo à esquerda
 				Trans[i][i] =  - (Wi + (gamma/dt) + Ei ) ;               // termo na diagonal
@@ -121,22 +118,15 @@ void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<doub
 			}
 
 		}
-		if (n == 1){
-			print_array_2D(Trans);
-			std::cout << "Vetor de pressoes" << std::endl;
-			print_array_1D(P);
-		}
+		// if (n == 1){
+			// print_array_2D(Trans);
+			// std::cout << "Vetor de pressoes" << std::endl;
+			// print_array_1D(P);
+		// }
 		P = solve_by_tdma(Trans, P);
 
 		// Registrar a evolução no tempo:
-		/*
-		double total_steps = nsteps*1.0;
-		if (n%5000 == 0){
-			double prg = 100*n/total_steps;
-			std::cout << "Progresso: " << std::setprecision(2) << std::fixed <<  prg << " \%" << std::endl;
-		}
-		*/
-		save_pressure_evolution(time_data, n*dt, P[0]);
+		save_pressure_evolution(time_data, n*dt, P[1]);
 
 			
 	}
@@ -248,7 +238,7 @@ std::vector<T> linspace(const double xi, const double xf, int Num){
 	return V;
 }
 
-double media_harmonica(const double a, const double b){
+double media(const double a, const double b){
 	return (a + b)/2.0;
 	//return 1.0/(0.5 * (1.0/a + 1.0/b));
 }
