@@ -204,7 +204,7 @@ void save_pressure_data(const std::vector<double>& X, const std::vector<double>&
 	std::string filename = init + std::to_string(a) + ".txt";
 	std::fstream saver{filename, std::ios::out|std::ios::trunc};
 
-	saver << std::setw(10) << "x (m)" << std::setw(10) << "Pressao (kPa)" << std::endl;
+	saver << std::setw(10) << "x (m) " << std::setw(10) << "Pressao (kPa)" << std::endl;
 	const auto N = X.size();
 	const auto M = Y.size();
 	if ( N != M)
