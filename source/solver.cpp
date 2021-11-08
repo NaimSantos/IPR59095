@@ -30,6 +30,7 @@ constexpr double A_x {Ly*Lz};        // área
 constexpr int N {50};                // número de células
 constexpr double dx = Lx/N;
 constexpr int factor {86400};        // fator de conversão segundos/dia
+constexpr double D {4.0/factor};     // vazão no lado esquerdo
 constexpr double ti {0.0};
 constexpr double tf {100.0*factor};
 constexpr double dt {1.0*factor};
@@ -63,8 +64,7 @@ void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<doub
 	double Bi = 0.0;                        // B(p) na célula i
 	double Bi_prev = 0.0;                   // B(p) na célula i - 1
 	double Bi_next = 0.0;                   // B(p) na célula i + 1
-	double gamma = Vb*phi_ref*c_ref/B0;      // Vb*phi_ref*c_ref/Bi;
-	double D = 3.0;                         // vazão no lado esquerdo
+	double gamma = Vb*phi_ref*c_ref/B0;     // Vb*phi_ref*c_ref/Bi;
 
 	// Para salvar a evolução no tempo:
 	std::string filename {"time_evolution_data.txt"};
