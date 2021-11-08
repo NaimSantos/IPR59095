@@ -27,10 +27,10 @@ constexpr double mu {1.2e-3};        // viscosidade
 constexpr double c_ref {6.0e-10};    // compressibilidade
 constexpr double Vb {Lx*Ly*Lz};      // volume
 constexpr double A_x {Ly*Lz};        // área
-constexpr int N {100};               // número de células
+constexpr int N {5};                 // número de células
 constexpr double dx = Lx/N;
 constexpr int factor {86400};        // fator de conversão segundos/dia
-constexpr double D {4.0/factor};     // vazão no lado esquerdo
+constexpr double D {400.0/factor};   // vazão no lado esquerdo
 constexpr double ti {0.0};
 constexpr double tf {100*factor};
 constexpr double dt {0.5*factor};
@@ -88,7 +88,11 @@ void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<doub
 
 				Trans[i][i] = - (Ei + gamma/dt);
 				Trans[i][i+1] = Ei;
-				P[i] = -P[i]*(gamma/dt) + D;
+				double p0 = P[i] - D*dx;
+				double T_prev = (A_x*k_x)/(dx*mu*media_harmonica(Bi, evaluate_B(p0)));
+				if (n==1)
+					std::cout << "p0 = " << p0 << " T_prev = "<< T_prev << std::endl;
+				P[i] = -P[i]*(gamma/dt) + (T_prev);
 			}
 
 			// Contorno direito:
@@ -115,8 +119,13 @@ void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<doub
 
 				P[i] = - P[i] * (gamma/dt);
 			}
-		}
 
+		}
+		if (n == 1){
+			print_array_2D(Trans);
+			std::cout << "Vetor de pressoes" << std::endl;
+			print_array_1D(P);
+		}
 		P = solve_by_tdma(Trans, P);
 
 		// Registrar a evolução no tempo:
@@ -128,6 +137,8 @@ void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<doub
 		}
 		*/
 		save_pressure_evolution(time_data, n*dt, P[0]);
+
+			
 	}
 }
 
@@ -210,7 +221,7 @@ void save_pressure_data(const std::vector<double>& X, const std::vector<double>&
 	if ( N != M)
 		return;
 	for (int i = 0; i < N; i++){
-		saver << std::setw(10) << X[i] << " " << std::setw(10) << Y[i]/1000 << std::endl;
+		saver << std::setw(10) << X[i] << " " << std::setw(10) << std::setprecision(10) << Y[i]/1000 << std::endl;
 	}
 	a++;
 }
@@ -238,7 +249,8 @@ std::vector<T> linspace(const double xi, const double xf, int Num){
 }
 
 double media_harmonica(const double a, const double b){
-	return 1.0/(0.5 * (1.0/a + 1.0/b));
+	return (a + b)/2.0;
+	//return 1.0/(0.5 * (1.0/a + 1.0/b));
 }
 
 void teste_tdma(){
