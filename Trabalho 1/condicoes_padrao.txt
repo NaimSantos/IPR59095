@@ -1,0 +1,7 @@
+Caso Padrão:
+
+tempo = 365 x 10 dias (10 anos)
+vazão = 30 m^3/dias
+células = 32
+porosidade = 0.25
+permeablidade = 0.01

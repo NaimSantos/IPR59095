@@ -1,5 +1,5 @@
 #include <iostream>
-#include <iomanip>  //std::setw
+#include <iomanip>
 #include <cmath>
 #include <vector>
 #include <string>
@@ -37,7 +37,7 @@ constexpr double mu {1.2e-3};				// viscosidade
 constexpr double c_ref {6.0e-7};			// compressibilidade
 constexpr double Vb {Lx*Ly*Lz};				// volume
 constexpr double A_x {Ly*Lz};				// área
-constexpr int N {128};						// número de células
+constexpr int N {32};						// número de células
 constexpr double dx = Lx/N;
 constexpr double D {30.0};					// vazão no lado esquerdo
 constexpr double ti {0.0};
