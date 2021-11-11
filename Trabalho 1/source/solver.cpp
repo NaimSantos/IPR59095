@@ -26,7 +26,7 @@ constexpr double factor_q {0.1589873};		// std m^3/d <-> STD/D
 constexpr double factor_t {86400};			// segundos <-> dia
 
 // Variáveis do problema e da siomulação:
-constexpr double k_x {0.01};				// permeabilidade (10e-15 m^2
+constexpr double k_x {0.01};				// permeabilidade (10e-15 m^2), convertida para mili m^2
 constexpr double phi_ref {0.25};			// porosidade
 constexpr double P_ini {45000};				// Pressão inicial
 constexpr double Lx {5000.0};				// dimensão em x
@@ -128,9 +128,10 @@ void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<doub
 
 		}
 		if (n == 1){
-			//print_array_2D(Trans);
-			//std::cout << "Vetor de pressoes" << std::endl;
-			//print_array_1D(P);
+			continue;
+			print_array_2D(Trans);
+			std::cout << "Vetor de pressoes" << std::endl;
+			print_array_1D(P);
 		}
 		P = solve_by_tdma(Trans, P);
 
