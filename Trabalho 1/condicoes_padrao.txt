@@ -1,14 +1,15 @@
 Considerei como caso padrão:
 
-tempo = 365 dias x 10 (10 anos)
+tempo = 365 dias x 1 (1 ano)
 vazão (D) = 30 m^3/dia
 células (N) = 32
 porosidade = 0.25
 permeablidade = 0.01
 
 O nome dos arquivos faz referência ao teste que está sendo feito.
-Caso A: variação do ntempo analisado
+Caso A: variação do tempo analisado
 Caso B: variação do número de volumes/células
 Caso C: variação da vazão (contorno esquerdo)
 Caso D: variação da porosidade
 Caso E: variação da permeabilidade
+Caso F: variação do passo de tempo (ainda não decidido)
