@@ -17,33 +17,33 @@ double evaluate_trans(const double B1, const double B2);
 void teste_tdma();
 
 //Fatores de conversão:
-constexpr double factor_L {0.3048};			// metro <-> pé
-constexpr double factor_mu {0.001};			// Pa.s  <-> cp
-constexpr double factor_kx {0.9869233};		// micrometro quadrado <-> darcy
-constexpr double factor_P {6.894757};		// kPascal <-> psia
-constexpr double factor_c {0.1450377};		// kPascal <-> psia
-constexpr double factor_q {0.1589873};		// std m^3/d <-> STD/D
-constexpr double factor_t {86400};			// segundos <-> dia
+constexpr double factor_L {0.3048};         // metro <-> pé
+constexpr double factor_mu {0.001};         // Pa.s  <-> cp
+constexpr double factor_kx {0.9869233};     // micrometro quadrado <-> darcy
+constexpr double factor_P {6.894757};       // kPascal <-> psia
+constexpr double factor_c {0.1450377};      // kPascal <-> psia
+constexpr double factor_q {0.1589873};      // std m^3/d <-> STD/D
+constexpr double factor_t {86400};          // segundos <-> dia
 constexpr double betac {86.4e-06};
 //constexpr double alphac {1.0};
 constexpr double alphac {5.614583};
 
 
 // Variáveis do problema e da siomulação:
-constexpr double k_x {0.01};				// permeabilidade (10e-15 m^2) convertida para mili m^2
-constexpr double phi_ref {0.25};			// porosidade
-constexpr double P_ini {45000};				// Pressão inicial
-constexpr double Lx {5000.0};				// dimensão em x
-constexpr double Ly {40.0};					// dimensão em y
-constexpr double Lz {10.0};					// dimensão em z
-constexpr double B0 {1.5};					// B de referência
-constexpr double mu {1.2e-3};				// viscosidade
-constexpr double c_ref {6.0e-7};			// compressibilidade
-constexpr double Vb {Lx*Ly*Lz};				// volume
-constexpr double A_x {Ly*Lz};				// área
-constexpr int N {32};						// número de células
+constexpr double k_x {0.01};               // permeabilidade (10e-15 m^2) convertida para mili m^2
+constexpr double phi_ref {0.25};           // porosidade
+constexpr double P_ini {45000};            // Pressão inicial
+constexpr double Lx {5000.0};              // dimensão em x
+constexpr double Ly {40.0};                // dimensão em y
+constexpr double Lz {10.0};                // dimensão em z
+constexpr double B0 {1.5};                 // B de referência
+constexpr double mu {1.2e-3};              // viscosidade
+constexpr double c_ref {6.0e-7};           // compressibilidade
+constexpr double Vb {Lx*Ly*Lz};            // volume
+constexpr double A_x {Ly*Lz};              // área
+constexpr int N {32};                      // número de células
 constexpr double dx = Lx/N;
-constexpr double D {30.0};					// vazão no lado esquerdo
+constexpr double D {30.0};                 // vazão no lado esquerdo
 constexpr double ti {0.0};
 constexpr double tf {365*10};
 constexpr double dt {0.5};
@@ -63,7 +63,7 @@ int main(int argc, char* argv[]){
 
 	auto Pos = linspace<double>(0.0, Lx, N);                             // vetor para plotar P por x
 	std::vector<double> Pressure (N, P_ini);                             // vetor com as pressões
-	std::vector<std::vector<double>> T (N, std::vector<double>(N, 0.0));// matriz de transmissibilidades
+	std::vector<std::vector<double>> T (N, std::vector<double>(N, 0.0)); // matriz de transmissibilidades
 
 	evaluate_pressure(T, Pressure);
 	save_pressure_data(Pos, Pressure);
@@ -77,7 +77,7 @@ void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<doub
 	double Bi = 0.0;                        // B(p) na célula i
 	double Bi_prev = 0.0;                   // B(p) na célula i - 1
 	double Bi_next = 0.0;                   // B(p) na célula i + 1
-	double gamma = alphac*Vb*phi_ref*c_ref/B0;     // Vb*phi_ref*c_ref/Bi;
+	double gamma = alphac*Vb*phi_ref*c_ref/B0;
 
 	// Para salvar a evolução no tempo:
 	std::string filename {"time_evolution_data.txt"};
