@@ -74,6 +74,7 @@ int main(int argc, char* argv[]){
 }
 
 void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<double>& P){
+	// Posições de registro da evolução temporal:
 	int pos0_0 = 0;
 	auto pos0_1 = static_cast<int>(0.1*N);
 	auto pos0_2 = static_cast<int>(0.2*N);
@@ -96,7 +97,7 @@ void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<doub
 
 	// Iteraçao no tempo:
 	for (size_t n = 1; n <= nsteps; n++){
-		//std::cout << "Curent step: " << n <<std::endl;
+
 		// Iteração no domínio espacial:
 		for (size_t i = 0; i < N; i++){
 
