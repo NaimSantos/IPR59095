@@ -24,6 +24,10 @@ constexpr double factor_P {6.894757};		// kPascal <-> psia
 constexpr double factor_c {0.1450377};		// kPascal <-> psia
 constexpr double factor_q {0.1589873};		// std m^3/d <-> STD/D
 constexpr double factor_t {86400};			// segundos <-> dia
+constexpr double betac {86.4e-06};
+//constexpr double alphac {1.0};
+constexpr double alphac {5.614583};
+
 
 // Variáveis do problema e da siomulação:
 constexpr double k_x {0.01};				// permeabilidade (10e-15 m^2) convertida para mili m^2
@@ -44,7 +48,7 @@ constexpr double ti {0.0};
 constexpr double tf {365*10};
 constexpr double dt {0.5};
 constexpr auto nsteps = static_cast<int>((tf - ti)/dt);
-constexpr double betac {86.4e-06};
+
 
 int main(int argc, char* argv[]){
 	/*
@@ -73,7 +77,7 @@ void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<doub
 	double Bi = 0.0;                        // B(p) na célula i
 	double Bi_prev = 0.0;                   // B(p) na célula i - 1
 	double Bi_next = 0.0;                   // B(p) na célula i + 1
-	double gamma = Vb*phi_ref*c_ref/B0;     // Vb*phi_ref*c_ref/Bi;
+	double gamma = alphac*Vb*phi_ref*c_ref/B0;     // Vb*phi_ref*c_ref/Bi;
 
 	// Para salvar a evolução no tempo:
 	std::string filename {"time_evolution_data.txt"};
