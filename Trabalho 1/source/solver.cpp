@@ -12,9 +12,10 @@ template <typename T> void print_array_1D(const std::vector<T> A);
 template <typename T> void print_array_2D(const std::vector<std::vector<T>> A);
 template <typename T> std::vector<T> linspace(const double xi, const double xf, int Num);
 void save_pressure_data(const std::vector<double>& X, const std::vector<double>& Y);
-void save_pressure_evolution(std::fstream& saver, double Dia, double Press1, double Press2 = 0.0, double Press3 = 0.0);
+void save_pressure_evolution(std::fstream& saver, double Dia, double Press1, double Press2 = 0.0, double Press3 = 0.0, double Press4 = 0.0);
 double evaluate_trans(const double B1, const double B2);
 void teste_tdma();
+void print_time_info();
 
 //Fatores de conversão:
 constexpr double factor_L {0.3048};         // metro <-> pé
@@ -45,12 +46,13 @@ constexpr int N {32};                      // número de células
 constexpr double dx = Lx/N;
 constexpr double D {30.0};                 // vazão no lado esquerdo
 constexpr double ti {0.0};
-constexpr double tf {365*10};
+constexpr double tf {365*1};
 constexpr double dt {0.5};
 constexpr auto nsteps = static_cast<int>((tf - ti)/dt);
 
 
 int main(int argc, char* argv[]){
+	print_time_info();
 	/*
 	std::vector<std::string> args(argv, argv + argc);
 	std::cout << "Argumentos obtidos via linha de comando:" << std::endl;
@@ -67,9 +69,16 @@ int main(int argc, char* argv[]){
 
 	evaluate_pressure(T, Pressure);
 	save_pressure_data(Pos, Pressure);
+	
+	std::cout << "\nFim da execucao!" << std::endl;
 }
 
 void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<double>& P){
+	int pos0_0 = 0;
+	auto pos0_1 = static_cast<int>(0.1*N);
+	auto pos0_2 = static_cast<int>(0.2*N);
+	auto pos0_9 = static_cast<int>(0.9*N);
+
 
 	// Variáveis utilizadas no processo iterativo:
 	double Ei = 0.0;                        // Transmissibilidade à direita da célula i
@@ -77,17 +86,17 @@ void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<doub
 	double Bi = 0.0;                        // B(p) na célula i
 	double Bi_prev = 0.0;                   // B(p) na célula i - 1
 	double Bi_next = 0.0;                   // B(p) na célula i + 1
-	double gamma = alphac*Vb*phi_ref*c_ref/B0;
+	double gamma = Vb*phi_ref*c_ref/(alphac*B0);
 
 	// Para salvar a evolução no tempo:
 	std::string filename {"time_evolution_data.txt"};
 	std::fstream time_file{filename, std::ios::out|std::ios::trunc};
-	time_file << std::setw(10) << "Dias " << std::setw(10) << "Pressao (kPa)" << std::endl;
+	time_file << std::setw(10) << "Dias " << std::setw(10) << "P_0.0Lx P_0.1Lx P_0.2Lx P_0.9Lx " << std::endl;
 	std::fstream time_data{filename, std::ios::out|std::ios::app};
 
 	// Iteraçao no tempo:
 	for (size_t n = 1; n <= nsteps; n++){
-
+		//std::cout << "Curent step: " << n <<std::endl;
 		// Iteração no domínio espacial:
 		for (size_t i = 0; i < N; i++){
 
@@ -139,7 +148,7 @@ void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<doub
 		P = solve_by_tdma(Trans, P);
 
 		// Registrar a evolução no tempo:
-		// save_pressure_evolution(time_data, n*dt, P[0], P[static_cast<int>(0.1*N)], P[static_cast<int>(0.2*N)]);
+		save_pressure_evolution(time_data, n*dt, P[pos0_0], P[pos0_1], P[pos0_2], P[pos0_9]);
 	}
 }
 
@@ -170,8 +179,8 @@ void save_pressure_data(const std::vector<double>& X, const std::vector<double>&
 	a++;
 }
 
-void save_pressure_evolution(std::fstream& saver, double Dia, double Press1, double Press2, double Press3){
-	saver << std::setw(10) << Dia << " " << std::setw(10) << Press1 << " " << Press2 << " " << Press3 << std::endl;
+void save_pressure_evolution(std::fstream& saver, double Dia, double Press1, double Press2, double Press3, double Press4){
+	saver <<  std::setw(5) << Dia << " " << std::setprecision(9) << std::setw(11) << Press1 << " " << std::setw(11) << Press2 << " " << std::setw(11) << Press3 << " " << std::setw(11) << Press4 << std::endl;
 }
 
 std::vector<double> solve_by_tdma(const std::vector<std::vector<double>>& Mat, const std::vector<double>& X){
@@ -271,4 +280,10 @@ void teste_tdma(){
 	for (const auto& x : Res)
 		std::cout << x << " ";
 	std::cout << std::endl;
+}
+void print_time_info(){
+	std::cout << "Tempo total: "  << tf << " dias" << std::endl;
+	std::cout << "Passo de tempo: " << dt << " dia(s)" << std::endl;
+	std::cout << "Numero de passos de tempo a calcular: " << nsteps  << std::endl;
+	
 }
