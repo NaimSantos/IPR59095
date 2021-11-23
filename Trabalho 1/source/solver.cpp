@@ -1,3 +1,9 @@
+/*
+	Descrição: Solução para a pressão em um escoamento monofásico
+	Autor: Naim J. S. Carvalho (njscarvalho@iprj.uerj.br)
+	Data: 20 de Novembro de 2021
+*/
+
 #include <iostream>
 #include <iomanip>
 #include <cmath>
@@ -14,7 +20,6 @@ template <typename T> std::vector<T> linspace(const double xi, const double xf, 
 void save_pressure_data(const std::vector<double>& X, const std::vector<double>& Y);
 void save_pressure_evolution(std::fstream& saver, double Dia, double Press1, double Press2 = 0.0, double Press3 = 0.0, double Press4 = 0.0);
 double evaluate_trans(const double B1, const double B2);
-void teste_tdma();
 void print_time_info();
 
 //Fatores de conversão:
@@ -25,13 +30,11 @@ constexpr double factor_P {6.894757};       // kPascal <-> psia
 constexpr double factor_c {0.1450377};      // kPascal <-> psia
 constexpr double factor_q {0.1589873};      // std m^3/d <-> STD/D
 constexpr double factor_t {86400};          // segundos <-> dia
-constexpr double betac {86.4e-06};
-//constexpr double alphac {1.0};
-constexpr double alphac {5.614583};
+constexpr double betac {86.4e-06};          // transmissibilidades
+constexpr double alphac {5.614583};         // volumes
 
-
-// Variáveis do problema e da siomulação:
-constexpr double k_x {0.01};               // permeabilidade (10e-15 m^2) convertida para mili m^2
+// Variáveis do problema e da simulação:
+constexpr double k_x {0.01};               // permeabilidade, em para mili m^2
 constexpr double phi_ref {0.25};           // porosidade
 constexpr double P_ini {45000};            // Pressão inicial
 constexpr double Lx {5000.0};              // dimensão em x
@@ -42,39 +45,30 @@ constexpr double mu {1.2e-3};              // viscosidade
 constexpr double c_ref {6.0e-7};           // compressibilidade
 constexpr double Vb {Lx*Ly*Lz};            // volume
 constexpr double A_x {Ly*Lz};              // área
+constexpr double D {30.0};                 // vazão no lado esquerdo
 constexpr int N {32};                      // número de células
 constexpr double dx = Lx/N;
-constexpr double D {30.0};                 // vazão no lado esquerdo
 constexpr double ti {0.0};
-constexpr double tf {365*1};
+constexpr double tf {365*3};
 constexpr double dt {0.5};
 constexpr auto nsteps = static_cast<int>((tf - ti)/dt);
 
 
 int main(int argc, char* argv[]){
 	print_time_info();
-	/*
-	std::vector<std::string> args(argv, argv + argc);
-	std::cout << "Argumentos obtidos via linha de comando:" << std::endl;
-	for (const auto& arg : args){
-		std::cout << arg << std::endl;
-	}
-	*/
-	if (argc > 1)
-		teste_tdma();
 
-	auto Pos = linspace<double>(0.0, Lx, N);                             // vetor para plotar P por x
+	std::vector<double> Pos = linspace<double>(0.0, Lx, N);              // vetor para plotar P por x
 	std::vector<double> Pressure (N, P_ini);                             // vetor com as pressões
 	std::vector<std::vector<double>> T (N, std::vector<double>(N, 0.0)); // matriz de transmissibilidades
 
 	evaluate_pressure(T, Pressure);
 	save_pressure_data(Pos, Pressure);
-	
+
 	std::cout << "\nFim da execucao!" << std::endl;
 }
 
 void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<double>& P){
-	// Posições de registro da evolução temporal:
+	// Posições de registro da evolução temporal (x=0, x=0.1Lx, x=0.2Lx e x=0.9Lx):
 	int pos0_0 = 0;
 	auto pos0_1 = static_cast<int>(0.1*N);
 	auto pos0_2 = static_cast<int>(0.2*N);
@@ -87,7 +81,7 @@ void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<doub
 	double Bi = 0.0;                        // B(p) na célula i
 	double Bi_prev = 0.0;                   // B(p) na célula i - 1
 	double Bi_next = 0.0;                   // B(p) na célula i + 1
-	double gamma = Vb*phi_ref*c_ref/(alphac*B0);
+	double gamma = Vb*phi_ref*c_ref/(B0);
 
 	// Para salvar a evolução no tempo:
 	std::string filename {"time_evolution_data.txt"};
@@ -140,11 +134,6 @@ void evaluate_pressure(std::vector<std::vector<double>>& Trans, std::vector<doub
 				P[i] = - P[i] * (gamma/dt);
 			}
 
-		}
-		if (n == 1){
-			//print_array_2D(Trans);
-			//std::cout << "Vetor de pressoes" << std::endl;
-			//print_array_1D(P);
 		}
 		P = solve_by_tdma(Trans, P);
 
@@ -262,29 +251,8 @@ std::vector<T> linspace(const double xi, const double xf, int Num){
 	return V;
 }
 
-void teste_tdma(){
-
-	std::vector<std::vector<double>> A {
-										{4.0, 1.0, 0.0, 0.0},
-										{1.0, 3.0, 2.0, 0.0},
-										{0.0, 2.0, 7.0, 6.0},
-										{0.0, 0.0, -4.0, 3.0}
-										};
-	std::vector<double> B {11, 14, 31.5, 1.5};
-	std::vector<double> Res = solve_by_tdma(A, B);
-	std::cout << "----Teste com o Algoritmo de Thomas----" << std::endl;
-	std::cout << "Matriz A: " << std::endl;
-	print_array_2D<double>(A);
-	std::cout << "Vetor B: " << std::endl;
-	print_array_1D<double>(B);
-	std::cout << "\nSolucao via TDMA: ";
-	for (const auto& x : Res)
-		std::cout << x << " ";
-	std::cout << std::endl;
-}
 void print_time_info(){
 	std::cout << "Tempo total: "  << tf << " dias" << std::endl;
 	std::cout << "Passo de tempo: " << dt << " dia(s)" << std::endl;
 	std::cout << "Numero de passos de tempo a calcular: " << nsteps  << std::endl;
-	
 }
