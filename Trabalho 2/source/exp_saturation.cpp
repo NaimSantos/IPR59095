@@ -32,11 +32,11 @@ constexpr auto C1 = q_t/(A*phi);
 constexpr auto C2 = mu_o/mu_w;
 
 // Variáveis da simulação:
-constexpr int N {128};                              // número de células
+constexpr int N {128};                             // número de células
 constexpr double dx = Lx/N;                        // refinamento da malha
 constexpr double t_max {365.0};                    // tempo de simulação, em dias
-constexpr double max_diff_value{1.04432};          // valor máximo da derivada de f_w
-constexpr auto dt_max = dx/max_diff_value;         // valor máximo permito para o passo de tempo
+constexpr double max_u_value{1.04415};          // valor máximo da derivada de f_w
+constexpr auto dt_max = dx/max_u_value;         // valor máximo permito para o passo de tempo
 constexpr auto dt = 0.95*dt_max;                   // valor do passo de tempo efetivamente usado
 constexpr auto nsteps = static_cast<int>(t_max/dt);
 
@@ -64,7 +64,7 @@ int main(int argc, char* argv[]){
 }
 
 double function_f(const double sw){
-	return 1.0/(1.0 + C2*std::pow(1-sw, 2)/std::pow(sw, 2));
+	return C1/(1.0 + C2*std::pow(1-sw, 2)/std::pow(sw, 2));
 }
 
 void save_saturation_data(const std::vector<double>& X, const std::vector<double>& Y){
@@ -101,7 +101,7 @@ void show_parameters(){
 	std::cout << "Numero de celulas: " << N << std::endl;
 	std::cout << "Refinamento (dx): " << dx << std::endl;
 	std::cout << "Tempo total: "  << t_max << " dias" << std::endl;
-	std::cout << "Valor maximo da derivada de fw (u_max): " << max_diff_value << std::endl;
+	std::cout << "Valor maximo da derivada de fw (u_max): " << max_u_value << std::endl;
 	std::cout << "Passo de tempo maximo (dx/u_max): " << dt_max << " dia(s)" << std::endl;
 	std::cout << "Passo de tempo usado: " << dt << " dia(s)" << std::endl;
 	std::cout << "Numero de passos de tempo a calcular: " << nsteps  << std::endl;
