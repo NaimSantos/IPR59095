@@ -3,35 +3,19 @@ set style line 2 linecolor "magenta" linetype 2 linewidth 2 pointtype 2 pointsiz
 set style line 3 linecolor "blue" linetype 1 linewidth 2 pointtype 8 pointsize 2
 set style line 4 linecolor "dark-green" linetype 1 linewidth 2 pointtype 6 pointsize 2
 set style line 5 linecolor "gold" linetype 1 linewidth 2 pointtype 3 pointsize 2
+set style line 6 linecolor "black" linetype 1 linewidth 2 pointtype 3 pointsize 2
 
-set yrange[0:1.1]
-plot "saturation_data.txt" using 1:2 with lines ls 1 title "Saturação"
+
+set yrange[0.15:1.05]
+plot "data_Qt25.txt" using 1:2 with lines ls 2 title "q_t = 25 m^3/d", "data_default.txt" using 1:2 with lines ls 1 title "q_t = 50 m^3/d", "data_Qt75.txt" using 1:2 with lines ls 3 title "q_t = 75 m^3/d",
 set terminal pngcairo enhanced
-set output "saturacao_no_espaco.png"
+set output "Resultado4.png"
 set grid xtics ytics lw 2
 set grid
 set xlabel "x (m)"
 set ylabel "Saturação da água"
-set key right bottom
+set key right top
 replot
 set terminal wxt
 set output
 
-# lc - linecolor
-# lt - linetype
-# lw - linewidth
-# pt - pointtype
-# ps - pointsize
-# w  - with
-# lp - linespoints
-# ls - linestyle
-# w l -> with lines
-# lw ->  linewidth
-# lc -> linecolor 
-# dt -> dashtype
-# rotate by 0 -> para cada eixo (xlabel, ylabel), rotaciona o título do eixo
-# set key outside: legenda fora da área plotável. 
-
-
-
-# plot "data_padrao.txt" using 1:2 w l lw 2 lc "blue" title "Caso Padrão", "data_dt1.txt" using 1:2 w l lw 2 lc "gold" title " dt = 1,0 dia(s)",  "data_dt2.5.txt" using 1:2 w l lw 2 lc "red" title "dt = 2,5 dia(s)", "data_dt5.txt" using 1:2 w l lw 2 lc "dark-green" title "dt = 5,0 dia(s)"
